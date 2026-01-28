@@ -1107,36 +1107,40 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    .calendar-inner {
-      min-width: 320px;
-    }
-
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-    }
-
-    .calendar-header {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      margin-bottom: 8px;
-      position: sticky;
-      top: 0;
-      background: var(--bg-card);
-      padding: 8px 0;
-      z-index: 1;
-    }
-
     .calendar-day-header {
       text-align: center;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 600;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 4px 0;
+      letter-spacing: 0.3px;
+      padding: 2px 0;
+    }
+
+    .calendar-months-wrapper {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px 20px;
+    }
+
+    .calendar-month-block {
+      background: rgba(10, 15, 20, 0.3);
+      border: 1px solid rgba(30, 58, 95, 0.15);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .calendar-month-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+    }
+
+    .calendar-month-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+      margin-bottom: 6px;
     }
 
     .calendar-month-row {
@@ -1144,18 +1148,15 @@
     }
 
     .calendar-month-label {
-      grid-column: 1 / -1;
       font-size: 12px;
       font-weight: 700;
       color: var(--text-primary);
-      padding: 16px 0 8px;
+      padding: 0 0 10px;
       text-transform: uppercase;
       letter-spacing: 1.5px;
-      border-bottom: 1px solid rgba(30, 58, 95, 0.2);
-      margin-bottom: 8px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .calendar-month-label::before {
@@ -1173,6 +1174,385 @@
       color: var(--text-muted);
       letter-spacing: 0;
       text-transform: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .calendar-month-stats-text {
+      display: inline;
+    }
+
+    .calendar-month-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .calendar-month-btn {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(30, 58, 95, 0.2);
+      border: 1px solid rgba(42, 74, 111, 0.25);
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .calendar-month-btn:hover {
+      background: rgba(30, 58, 95, 0.35);
+      border-color: rgba(42, 74, 111, 0.4);
+      color: var(--text-primary);
+    }
+
+    .calendar-month-btn svg {
+      width: 12px;
+      height: 12px;
+      transition: transform 0.2s;
+    }
+
+    /* Hide collapse button on desktop two-column layout */
+    @media (min-width: 769px) {
+      .calendar-month-btn[data-action="toggle"] {
+        display: none;
+      }
+    }
+
+    .calendar-month-label.collapsed {
+      padding-bottom: 0;
+    }
+
+    .calendar-month-content.collapsed {
+      display: none;
+    }
+
+    /* Week medals */
+    .week-medal {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .week-medal-gold {
+      color: #ffd700;
+      filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.5));
+    }
+
+    .week-medal-silver {
+      color: #c0c0c0;
+      filter: drop-shadow(0 0 3px rgba(192, 192, 192, 0.4));
+    }
+
+    .week-medal-bronze {
+      color: #cd7f32;
+      filter: drop-shadow(0 0 3px rgba(205, 127, 50, 0.4));
+    }
+
+    /* Month stats modal */
+    .month-stats-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+
+    .month-stats-modal.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .month-stats-content {
+      background:
+        radial-gradient(ellipse 100% 60% at 50% -20%, rgba(30, 58, 95, 0.15) 0%, transparent 50%),
+        linear-gradient(175deg, #12151a 0%, #0d1014 40%, #0a0c0e 100%);
+      border: 1px solid rgba(42, 74, 111, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform 0.3s;
+    }
+
+    .month-stats-modal.show .month-stats-content {
+      transform: translateY(0);
+    }
+
+    .month-stats-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(30, 58, 95, 0.2);
+    }
+
+    .month-stats-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .month-stats-close {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .month-stats-close:hover {
+      background: rgba(30, 58, 95, 0.2);
+      border-color: rgba(42, 74, 111, 0.3);
+      color: var(--text-primary);
+    }
+
+    .month-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .month-stat-card {
+      background: rgba(26, 30, 36, 0.4);
+      border: 1px solid rgba(30, 58, 95, 0.15);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .month-stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .month-stat-value.highlight {
+      color: var(--accent);
+    }
+
+    .month-stat-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .month-stat-sub {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    /* Random Stats Card */
+    .random-stats-card {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .random-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(6, 1fr);
+      gap: 10px;
+      flex: 1;
+    }
+
+    @media (min-width: 768px) {
+      .random-stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+      }
+    }
+
+    .random-stat-item {
+      background:
+        linear-gradient(135deg, rgba(26, 30, 36, 0.5) 0%, rgba(18, 22, 27, 0.3) 100%);
+      border: 1px solid rgba(30, 58, 95, 0.15);
+      border-radius: 10px;
+      padding: 14px 12px;
+      text-align: center;
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .random-stat-item:hover {
+      background:
+        linear-gradient(135deg, rgba(30, 58, 95, 0.2) 0%, rgba(26, 30, 36, 0.4) 100%);
+      border-color: rgba(42, 74, 111, 0.3);
+    }
+
+    .random-stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .random-stat-value.highlight {
+      color: var(--accent);
+    }
+
+    .random-stat-value.emerald {
+      color: var(--emerald);
+    }
+
+    .random-stat-label {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(30, 58, 95, 0.2);
+      border: 1px solid rgba(42, 74, 111, 0.25);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .refresh-btn:hover {
+      background: rgba(30, 58, 95, 0.35);
+      border-color: rgba(42, 74, 111, 0.4);
+      color: var(--text-primary);
+    }
+
+    .refresh-btn svg {
+      width: 14px;
+      height: 14px;
+      transition: transform 0.3s;
+    }
+
+    .refresh-btn:hover svg {
+      transform: rotate(180deg);
+    }
+
+    /* Monthly Overview Card */
+    .month-overview-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background:
+        linear-gradient(135deg, rgba(26, 30, 36, 0.4) 0%, rgba(18, 22, 27, 0.2) 100%);
+      border: 1px solid rgba(30, 58, 95, 0.12);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      transition: all 0.25s ease;
+    }
+
+    .month-overview-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .month-overview-item:hover {
+      background:
+        linear-gradient(135deg, rgba(30, 58, 95, 0.15) 0%, rgba(26, 30, 36, 0.3) 100%);
+      border-color: rgba(42, 74, 111, 0.25);
+    }
+
+    .month-overview-item.top {
+      background:
+        linear-gradient(135deg, rgba(30, 58, 95, 0.2) 0%, rgba(21, 40, 64, 0.12) 100%);
+      border-color: rgba(42, 74, 111, 0.3);
+    }
+
+    .month-overview-left {
+      min-width: 70px;
+    }
+
+    .month-overview-name {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .month-overview-weeks {
+      font-size: 9px;
+      color: var(--text-dim);
+    }
+
+    .month-overview-bar-wrap {
+      flex: 1;
+      height: 6px;
+      background: rgba(30, 58, 95, 0.2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .month-overview-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--midnight) 0%, var(--accent) 100%);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .month-overview-item.top .month-overview-bar {
+      background: linear-gradient(90deg, var(--midnight-light) 0%, var(--accent) 100%);
+    }
+
+    .month-overview-hours {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+      min-width: 50px;
+      text-align: right;
+    }
+
+    .month-overview-item.top .month-overview-hours {
+      color: var(--accent);
+    }
+
+    @media (max-width: 480px) {
+      .month-overview-item {
+        padding: 8px 10px;
+        gap: 8px;
+      }
+      .month-overview-left {
+        min-width: 60px;
+      }
+      .month-overview-name {
+        font-size: 10px;
+      }
+      .month-overview-hours {
+        font-size: 12px;
+        min-width: 45px;
+      }
     }
 
     .calendar-day {
@@ -1183,13 +1563,13 @@
       justify-content: center;
       background: rgba(26, 30, 36, 0.3);
       border: 1px solid rgba(30, 58, 95, 0.1);
-      border-radius: 8px;
+      border-radius: 6px;
       font-size: 9px;
       font-variant-numeric: tabular-nums;
       transition: all 0.2s;
       position: relative;
-      min-height: 44px;
-      min-width: 44px;
+      min-height: 36px;
+      min-width: 36px;
       cursor: default;
     }
 
@@ -1204,16 +1584,48 @@
       border-color: rgba(42, 74, 111, 0.3);
     }
 
-    .calendar-day.has-hours.high {
+    /* 16h+ - subtle glow */
+    .calendar-day.has-hours.tier-good {
       background:
-        linear-gradient(180deg, rgba(34, 197, 94, 0.25) 0%, rgba(22, 163, 74, 0.15) 100%);
-      border-color: rgba(34, 197, 94, 0.35);
+        linear-gradient(180deg, rgba(42, 74, 111, 0.35) 0%, rgba(30, 58, 95, 0.25) 100%);
+      border-color: rgba(42, 74, 111, 0.4);
     }
 
-    .calendar-day.has-hours.very-high {
+    /* 18h+ - noticeable accent */
+    .calendar-day.has-hours.tier-great {
       background:
-        linear-gradient(180deg, rgba(34, 197, 94, 0.4) 0%, rgba(22, 163, 74, 0.25) 100%);
-      border-color: rgba(34, 197, 94, 0.5);
+        linear-gradient(180deg, rgba(74, 156, 174, 0.25) 0%, rgba(42, 74, 111, 0.2) 100%);
+      border-color: rgba(74, 156, 174, 0.35);
+    }
+
+    /* 20h+ - emerald */
+    .calendar-day.has-hours.tier-epic {
+      background:
+        linear-gradient(180deg, rgba(34, 197, 94, 0.3) 0%, rgba(22, 163, 74, 0.2) 100%);
+      border-color: rgba(34, 197, 94, 0.4);
+    }
+
+    /* 22h+ - petroleum */
+    .calendar-day.has-hours.tier-legendary {
+      background:
+        linear-gradient(180deg, rgba(26, 92, 92, 0.5) 0%, rgba(42, 122, 122, 0.35) 100%);
+      border-color: rgba(42, 122, 122, 0.6);
+      box-shadow: 0 0 12px rgba(42, 122, 122, 0.3);
+    }
+
+    /* 24h+ - midnight blue elite */
+    .calendar-day.has-hours.tier-elite {
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(42, 90, 143, 0.4) 0%, transparent 70%),
+        linear-gradient(180deg, rgba(30, 58, 95, 0.6) 0%, rgba(21, 40, 64, 0.45) 100%);
+      border-color: rgba(42, 90, 143, 0.7);
+      box-shadow: 0 0 16px rgba(30, 58, 95, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      animation: eliteGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes eliteGlow {
+      0%, 100% { box-shadow: 0 0 12px rgba(30, 58, 95, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1); }
+      50% { box-shadow: 0 0 20px rgba(42, 90, 143, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15); }
     }
 
     .calendar-day.has-hours.low {
@@ -1250,9 +1662,26 @@
       margin-top: 2px;
     }
 
-    .calendar-day.has-hours.high .calendar-day-hours,
-    .calendar-day.has-hours.very-high .calendar-day-hours {
+    .calendar-day.has-hours.tier-good .calendar-day-hours {
+      color: var(--accent-muted);
+    }
+
+    .calendar-day.has-hours.tier-great .calendar-day-hours {
+      color: var(--accent);
+    }
+
+    .calendar-day.has-hours.tier-epic .calendar-day-hours {
       color: var(--emerald);
+    }
+
+    .calendar-day.has-hours.tier-legendary .calendar-day-hours {
+      color: #2a7a7a;
+      text-shadow: 0 0 8px rgba(42, 122, 122, 0.6);
+    }
+
+    .calendar-day.has-hours.tier-elite .calendar-day-hours {
+      color: #4a9cff;
+      text-shadow: 0 0 10px rgba(74, 156, 255, 0.6);
     }
 
     .calendar-day.has-hours.low .calendar-day-hours {
@@ -1283,14 +1712,29 @@
       border-radius: 4px;
     }
 
-    .calendar-legend-color.very-high {
-      background: linear-gradient(180deg, rgba(34, 197, 94, 0.5) 0%, rgba(22, 163, 74, 0.3) 100%);
-      border: 1px solid rgba(34, 197, 94, 0.6);
+    .calendar-legend-color.tier-elite {
+      background: linear-gradient(180deg, rgba(30, 58, 95, 0.6) 0%, rgba(21, 40, 64, 0.45) 100%);
+      border: 1px solid rgba(42, 90, 143, 0.7);
     }
 
-    .calendar-legend-color.high {
+    .calendar-legend-color.tier-legendary {
+      background: linear-gradient(180deg, rgba(26, 92, 92, 0.5) 0%, rgba(42, 122, 122, 0.35) 100%);
+      border: 1px solid rgba(42, 122, 122, 0.6);
+    }
+
+    .calendar-legend-color.tier-epic {
       background: linear-gradient(180deg, rgba(34, 197, 94, 0.35) 0%, rgba(22, 163, 74, 0.2) 100%);
       border: 1px solid rgba(34, 197, 94, 0.45);
+    }
+
+    .calendar-legend-color.tier-great {
+      background: linear-gradient(180deg, rgba(74, 156, 174, 0.3) 0%, rgba(42, 74, 111, 0.2) 100%);
+      border: 1px solid rgba(74, 156, 174, 0.4);
+    }
+
+    .calendar-legend-color.tier-good {
+      background: linear-gradient(180deg, rgba(42, 74, 111, 0.35) 0%, rgba(30, 58, 95, 0.25) 100%);
+      border: 1px solid rgba(42, 74, 111, 0.45);
     }
 
     .calendar-legend-color.normal {
@@ -1304,13 +1748,24 @@
     }
 
     /* Mobile calendar */
+    @media (max-width: 768px) {
+      .calendar-months-wrapper {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+    }
+
     @media (max-width: 480px) {
-      .calendar-grid {
+      .calendar-month-grid {
         gap: 2px;
       }
+      .calendar-month-header {
+        gap: 2px;
+        margin-bottom: 4px;
+      }
       .calendar-day {
-        min-height: 38px;
-        min-width: 38px;
+        min-height: 42px;
+        min-width: 42px;
         border-radius: 6px;
       }
       .calendar-day-date {
@@ -1321,7 +1776,10 @@
       }
       .calendar-month-label {
         font-size: 11px;
-        padding: 12px 0 6px;
+        padding: 0 0 8px;
+      }
+      .calendar-month-block {
+        padding: 12px;
       }
       .calendar-legend {
         gap: 8px;
@@ -2864,6 +3322,29 @@
         <div class="milestones" id="milestonesContainer"></div>
       </div>
 
+      <!-- Bottom Cards Row -->
+      <div class="two-col">
+        <!-- Random Stats Card -->
+        <div class="card random-stats-card">
+          <div class="card-header">
+            <span class="card-title">Random Stats</span>
+            <button class="refresh-btn" id="refreshStatsBtn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Shuffle
+            </button>
+          </div>
+          <div class="random-stats-grid" id="randomStatsGrid"></div>
+        </div>
+
+        <!-- Monthly Overview Card -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Monthly Overview</span>
+          </div>
+          <div id="monthlyOverviewList"></div>
+        </div>
+      </div>
+
       <div class="footer">
         <div class="footer-content">
           <div class="footer-line"></div>
@@ -2935,26 +3416,27 @@
           <span class="card-subtitle">Since July 2025</span>
         </div>
         <div class="calendar-container">
-          <div class="calendar-inner">
-            <div class="calendar-header">
-              <div class="calendar-day-header">Mon</div>
-              <div class="calendar-day-header">Tue</div>
-              <div class="calendar-day-header">Wed</div>
-              <div class="calendar-day-header">Thu</div>
-              <div class="calendar-day-header">Fri</div>
-              <div class="calendar-day-header">Sat</div>
-              <div class="calendar-day-header">Sun</div>
-            </div>
-            <div class="calendar-grid" id="hoursCalendar"></div>
-          </div>
+          <div class="calendar-months-wrapper" id="hoursCalendar"></div>
         </div>
         <div class="calendar-legend">
           <div class="calendar-legend-item">
-            <div class="calendar-legend-color very-high"></div>
-            <span>18h+</span>
+            <div class="calendar-legend-color tier-elite"></div>
+            <span>24h+</span>
           </div>
           <div class="calendar-legend-item">
-            <div class="calendar-legend-color high"></div>
+            <div class="calendar-legend-color tier-legendary"></div>
+            <span>22-24h</span>
+          </div>
+          <div class="calendar-legend-item">
+            <div class="calendar-legend-color tier-epic"></div>
+            <span>20-22h</span>
+          </div>
+          <div class="calendar-legend-item">
+            <div class="calendar-legend-color tier-great"></div>
+            <span>18-20h</span>
+          </div>
+          <div class="calendar-legend-item">
+            <div class="calendar-legend-color tier-good"></div>
             <span>16-18h</span>
           </div>
           <div class="calendar-legend-item">
@@ -2965,6 +3447,19 @@
             <div class="calendar-legend-color low"></div>
             <span>&lt;10h</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Month Stats Modal -->
+      <div class="month-stats-modal" id="monthStatsModal">
+        <div class="month-stats-content">
+          <div class="month-stats-header">
+            <span class="month-stats-title" id="monthStatsTitle">Month Stats</span>
+            <button class="month-stats-close" id="monthStatsClose">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="month-stats-grid" id="monthStatsGrid"></div>
         </div>
       </div>
 
@@ -3161,11 +3656,22 @@
       // Only count weeks with actual data (total > 0)
       const weeksWithData = weeklyData.filter(w => w.total > 0);
       const totalHours = weeksWithData.reduce((sum, w) => sum + w.total, 0);
-      const consecutiveDays = weeksWithData.length * 7;
+
+      // Count actual days logged
+      let daysLogged = 0;
+      weeklyData.forEach(w => {
+        if (w.dayData) {
+          daysLogged += w.dayData.filter(d => d.hours > 0).length;
+        }
+      });
+
+      // Find best week
+      const bestWeek = weeksWithData.reduce((best, w) => w.total > best.total ? w : best, { total: 0, week: 0 });
+
       const avgPerWeek = weeksWithData.length > 0 ? totalHours / weeksWithData.length : 0;
       const weeksOver100 = weeksWithData.filter(w => w.total >= 100).length;
       const multiplier = avgPerWeek / 40;
-      return { totalHours, consecutiveDays, avgPerWeek, weeksOver100, multiplier, weeksWithData: weeksWithData.length };
+      return { totalHours, daysLogged, bestWeek, avgPerWeek, weeksOver100, multiplier, weeksWithData: weeksWithData.length };
     }
 
     function getCurrentWeekIndex() {
@@ -3249,7 +3755,7 @@
           <div class="stat-sub">hours</div>
         </div>
         <div class="stat-card" data-order="3">
-          <div class="stat-value">${stats.consecutiveDays}</div>
+          <div class="stat-value">${stats.daysLogged}</div>
           <div class="stat-label">Days</div>
           <div class="stat-sub">consecutive</div>
         </div>
@@ -3276,7 +3782,251 @@
       renderComparisonChart();
       renderDailyStats();
       renderDistributions();
+      renderRandomStats();
+      renderMonthlyOverview();
     }
+
+    // All possible random stats generators
+    const allRandomStats = [
+      // Streak stats
+      () => {
+        let maxStreak = 0, currentStreak = 0;
+        const sorted = [...weeklyData].sort((a, b) => new Date(a.mondayDate) - new Date(b.mondayDate));
+        sorted.forEach(w => {
+          if (w.total >= 100) { currentStreak++; maxStreak = Math.max(maxStreak, currentStreak); }
+          else { currentStreak = 0; }
+        });
+        return { value: maxStreak, label: 'Most consecutive weeks ≥100h', highlight: maxStreak >= 5 };
+      },
+      () => {
+        let maxStreak = 0, currentStreak = 0;
+        const sorted = [...weeklyData].sort((a, b) => new Date(a.mondayDate) - new Date(b.mondayDate));
+        sorted.forEach(w => {
+          if (w.total >= 90) { currentStreak++; maxStreak = Math.max(maxStreak, currentStreak); }
+          else { currentStreak = 0; }
+        });
+        return { value: maxStreak, label: 'Most consecutive weeks ≥90h', highlight: maxStreak >= 8 };
+      },
+      () => {
+        let maxStreak = 0, currentStreak = 0;
+        const sorted = [...weeklyData].sort((a, b) => new Date(a.mondayDate) - new Date(b.mondayDate));
+        sorted.forEach(w => {
+          if (w.total >= 110) { currentStreak++; maxStreak = Math.max(maxStreak, currentStreak); }
+          else { currentStreak = 0; }
+        });
+        return { value: maxStreak, label: 'Most consecutive weeks ≥110h', highlight: maxStreak >= 3 };
+      },
+      // Month stats
+      () => {
+        const monthTotals = new Map();
+        weeklyData.forEach(w => {
+          if (w.mondayDate) {
+            const d = new Date(w.mondayDate);
+            const key = `${d.getFullYear()}-${d.getMonth()}`;
+            monthTotals.set(key, (monthTotals.get(key) || 0) + w.total);
+          }
+        });
+        const max = Math.max(...monthTotals.values(), 0);
+        return { value: max.toFixed(0) + 'h', label: 'Most hours in a single month', highlight: true };
+      },
+      () => {
+        const monthTotals = new Map();
+        weeklyData.forEach(w => {
+          if (w.mondayDate) {
+            const d = new Date(w.mondayDate);
+            const key = `${d.getFullYear()}-${d.getMonth()}`;
+            monthTotals.set(key, (monthTotals.get(key) || 0) + w.total);
+          }
+        });
+        const avg = monthTotals.size > 0 ? [...monthTotals.values()].reduce((a, b) => a + b, 0) / monthTotals.size : 0;
+        return { value: avg.toFixed(0) + 'h', label: 'Average hours per month', highlight: false };
+      },
+      // Day stats
+      () => {
+        let count = 0;
+        weeklyData.forEach(w => {
+          if (w.dayData) w.dayData.forEach(d => { if (d.hours >= 20) count++; });
+        });
+        return { value: count, label: 'Days with 20+ hours logged', highlight: count >= 10, emerald: true };
+      },
+      () => {
+        let count = 0;
+        weeklyData.forEach(w => {
+          if (w.dayData) w.dayData.forEach(d => { if (d.hours >= 18) count++; });
+        });
+        return { value: count, label: 'Days with 18+ hours logged', highlight: count >= 20 };
+      },
+      () => {
+        let max = 0;
+        weeklyData.forEach(w => {
+          if (w.dayData) w.dayData.forEach(d => { max = Math.max(max, d.hours); });
+        });
+        return { value: max.toFixed(1) + 'h', label: 'Highest single day ever', highlight: true, emerald: true };
+      },
+      () => {
+        let total = 0, count = 0;
+        weeklyData.forEach(w => {
+          if (w.dayData) w.dayData.forEach(d => { if (d.hours > 0) { total += d.hours; count++; } });
+        });
+        const avg = count > 0 ? total / count : 0;
+        return { value: avg.toFixed(1) + 'h', label: 'Average hours per day worked', highlight: false };
+      },
+      // Week stats
+      () => {
+        const max = Math.max(...weeklyData.map(w => w.total), 0);
+        const week = weeklyData.find(w => w.total === max);
+        return { value: max.toFixed(0) + 'h', label: `Best week ever (W${week?.week || '?'})`, highlight: true, emerald: true };
+      },
+      () => {
+        const min = Math.min(...weeklyData.filter(w => w.total > 0).map(w => w.total), 0);
+        const week = weeklyData.find(w => w.total === min && w.total > 0);
+        return { value: min.toFixed(0) + 'h', label: `Lowest week (W${week?.week || '?'})`, highlight: false };
+      },
+      () => {
+        const over100 = weeklyData.filter(w => w.total >= 100).length;
+        const pct = weeklyData.length > 0 ? (over100 / weeklyData.length * 100) : 0;
+        return { value: pct.toFixed(0) + '%', label: 'Weeks hitting 100h target', highlight: pct >= 50 };
+      },
+      () => {
+        const over90 = weeklyData.filter(w => w.total >= 90).length;
+        const pct = weeklyData.length > 0 ? (over90 / weeklyData.length * 100) : 0;
+        return { value: pct.toFixed(0) + '%', label: 'Weeks hitting 90h minimum', highlight: pct >= 70 };
+      },
+      // Variance stats
+      () => {
+        const totals = weeklyData.filter(w => w.total > 0).map(w => w.total);
+        if (totals.length < 2) return { value: '—', label: 'Weekly variance', highlight: false };
+        const avg = totals.reduce((a, b) => a + b, 0) / totals.length;
+        const variance = totals.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / totals.length;
+        const stdDev = Math.sqrt(variance);
+        return { value: stdDev.toFixed(1) + 'h', label: 'Weekly standard deviation', highlight: false };
+      },
+      () => {
+        const totals = weeklyData.filter(w => w.total > 0).map(w => w.total);
+        const range = totals.length > 0 ? Math.max(...totals) - Math.min(...totals) : 0;
+        return { value: range.toFixed(0) + 'h', label: 'Range (max - min week)', highlight: false };
+      },
+      // Cumulative stats
+      () => {
+        const total = weeklyData.reduce((sum, w) => sum + w.total, 0);
+        return { value: (total / 1000).toFixed(2) + 'k', label: 'Total hours (thousands)', highlight: true };
+      },
+      () => {
+        const daysWorked = weeklyData.reduce((sum, w) => {
+          if (w.dayData) return sum + w.dayData.filter(d => d.hours > 0).length;
+          return sum;
+        }, 0);
+        return { value: daysWorked, label: 'Total days with hours logged', highlight: false };
+      },
+      () => {
+        const weeksComplete = weeklyData.filter(w => {
+          if (!w.dayData) return false;
+          return w.dayData.every(d => d.hours > 0);
+        }).length;
+        return { value: weeksComplete, label: 'Weeks with all 7 days logged', highlight: weeksComplete >= 10 };
+      },
+      // Day of week stats
+      () => {
+        const dayTotals = [0, 0, 0, 0, 0, 0, 0];
+        const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+        weeklyData.forEach(w => {
+          if (w.dayData) w.dayData.forEach((d, i) => {
+            if (d.hours > 0) { dayTotals[i] += d.hours; dayCounts[i]++; }
+          });
+        });
+        const avgs = dayTotals.map((t, i) => dayCounts[i] > 0 ? t / dayCounts[i] : 0);
+        const bestIdx = avgs.indexOf(Math.max(...avgs));
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        return { value: days[bestIdx], label: `Best avg day (${avgs[bestIdx].toFixed(1)}h)`, highlight: false };
+      },
+      () => {
+        const dayTotals = [0, 0, 0, 0, 0, 0, 0];
+        weeklyData.forEach(w => {
+          if (w.dayData) w.dayData.forEach((d, i) => { dayTotals[i] += d.hours; });
+        });
+        const bestIdx = dayTotals.indexOf(Math.max(...dayTotals));
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        return { value: dayTotals[bestIdx].toFixed(0) + 'h', label: `Total on ${days[bestIdx]}s`, highlight: false };
+      },
+    ];
+
+    function renderRandomStats() {
+      // Shuffle and pick 8
+      const shuffled = [...allRandomStats].sort(() => Math.random() - 0.5);
+      const selected = shuffled.slice(0, 12);
+
+      const html = selected.map(fn => {
+        const stat = fn();
+        const valueClass = stat.emerald ? 'emerald' : (stat.highlight ? 'highlight' : '');
+        return `
+          <div class="random-stat-item">
+            <div class="random-stat-value ${valueClass}">${stat.value}</div>
+            <div class="random-stat-label">${stat.label}</div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('randomStatsGrid').innerHTML = html;
+    }
+
+    function renderMonthlyOverview() {
+      // Calculate monthly totals from daily data (same as calendar)
+      const monthTotals = new Map();
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      weeklyData.forEach(w => {
+        if (w.mondayDate && w.dayData) {
+          const monday = new Date(w.mondayDate);
+
+          w.dayData.forEach((day, i) => {
+            if (day.hours > 0) {
+              const date = new Date(monday);
+              date.setDate(date.getDate() + i);
+
+              const key = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, '0')}`;
+              const label = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+
+              if (!monthTotals.has(key)) {
+                monthTotals.set(key, { label, total: 0, days: 0 });
+              }
+              const m = monthTotals.get(key);
+              m.total += day.hours;
+              m.days++;
+            }
+          });
+        }
+      });
+
+      // Sort by date (most recent first) and take last 6 months
+      const sorted = [...monthTotals.entries()]
+        .sort((a, b) => b[0].localeCompare(a[0]))
+        .slice(0, 6)
+        .map(([_, data]) => data);
+
+      const maxTotal = Math.max(...sorted.map(m => m.total), 1);
+
+      const html = sorted.map((m, i) => {
+        const pct = (m.total / maxTotal) * 100;
+        const isTop = i === 0;
+        return `
+          <div class="month-overview-item ${isTop ? 'top' : ''}">
+            <div class="month-overview-left">
+              <span class="month-overview-name">${m.label}</span>
+              <span class="month-overview-weeks">${m.days} days</span>
+            </div>
+            <div class="month-overview-bar-wrap">
+              <div class="month-overview-bar" style="width: ${pct}%"></div>
+            </div>
+            <span class="month-overview-hours">${m.total.toFixed(0)}h</span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('monthlyOverviewList').innerHTML = html;
+    }
+
+    // Refresh button handler
+    document.getElementById('refreshStatsBtn')?.addEventListener('click', renderRandomStats);
 
     function renderDistributions() {
       // Daily hours distribution
@@ -3502,46 +4252,76 @@
           <div class="daily-stat-sub">${bestDayLabel}</div>
         </div>
         <div class="daily-stat-card">
-          <div class="daily-stat-value">${stats.totalDays}</div>
-          <div class="daily-stat-label">Days Logged</div>
-          <div class="daily-stat-sub">total</div>
+          <div class="daily-stat-value">${getStats().bestWeek.total.toFixed(0)}h</div>
+          <div class="daily-stat-label">Best Week</div>
+          <div class="daily-stat-sub">W${getStats().bestWeek.week}</div>
         </div>
       `;
     }
+
+    // Medal SVGs for top weeks
+    const medalSvgs = {
+      gold: `<svg class="week-medal week-medal-gold" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="currentColor"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a1a1a">1</text></svg>`,
+      silver: `<svg class="week-medal week-medal-silver" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="currentColor"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a1a1a">2</text></svg>`,
+      bronze: `<svg class="week-medal week-medal-bronze" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="currentColor"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a1a1a">3</text></svg>`
+    };
+
+    // Store month data for stats modal
+    let calendarMonthData = new Map();
 
     function renderHoursCalendar() {
       const calendarEl = document.getElementById('hoursCalendar');
       if (!calendarEl) return;
 
-      // Build a map of date -> hours and collect month stats
+      // Build a map of date -> hours and collect detailed month stats
       const hoursMap = new Map();
-      const monthStats = new Map();
+      calendarMonthData = new Map();
 
       weeklyData.forEach(week => {
         if (week.mondayDate && week.dayData) {
           const monday = new Date(week.mondayDate);
-          week.dayData.forEach((day, i) => {
+
+          week.dayData.forEach((dayData, i) => {
             const date = new Date(monday);
             date.setDate(date.getDate() + i);
             const key = date.toISOString().split('T')[0];
-            if (day.hours > 0) {
-              hoursMap.set(key, day.hours);
+            if (dayData.hours > 0) {
+              hoursMap.set(key, dayData.hours);
 
-              // Track month stats
+              // Track detailed month stats
               const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-              if (!monthStats.has(monthKey)) {
-                monthStats.set(monthKey, { total: 0, days: 0 });
+              if (!calendarMonthData.has(monthKey)) {
+                calendarMonthData.set(monthKey, {
+                  total: 0,
+                  days: 0,
+                  hours: [],
+                  best: 0,
+                  worst: Infinity,
+                  weekTotals: []
+                });
               }
-              const stats = monthStats.get(monthKey);
-              stats.total += day.hours;
+              const stats = calendarMonthData.get(monthKey);
+              stats.total += dayData.hours;
               stats.days++;
+              stats.hours.push(dayData.hours);
+              stats.best = Math.max(stats.best, dayData.hours);
+              stats.worst = Math.min(stats.worst, dayData.hours);
             }
           });
+
+          // Track week totals per month
+          if (week.total > 0) {
+            const weekStart = new Date(week.mondayDate);
+            const monthKey = `${weekStart.getFullYear()}-${weekStart.getMonth()}`;
+            if (calendarMonthData.has(monthKey)) {
+              calendarMonthData.get(monthKey).weekTotals.push(week.total);
+            }
+          }
         }
       });
 
       // Start from July 1, 2025
-      const startDate = new Date(2025, 6, 1); // July 1, 2025
+      const startDate = new Date(2025, 6, 1);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -3550,89 +4330,227 @@
 
       const months = ['January', 'February', 'March', 'April', 'May', 'June',
                       'July', 'August', 'September', 'October', 'November', 'December'];
+      const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-      let html = '';
-      let currentMonth = -1;
-      let currentDate = new Date(startDate);
-
-      // Add empty cells for days before start of month
-      const firstDayOfWeek = (startDate.getDay() + 6) % 7; // Monday = 0
-      for (let i = 0; i < firstDayOfWeek; i++) {
-        html += '<div class="calendar-day empty"></div>';
+      // Build list of months to render
+      const monthsToRender = [];
+      let d = new Date(startDate);
+      while (d <= endDate) {
+        const monthKey = `${d.getFullYear()}-${d.getMonth()}`;
+        if (!monthsToRender.find(m => m.key === monthKey)) {
+          monthsToRender.push({
+            key: monthKey,
+            year: d.getFullYear(),
+            month: d.getMonth()
+          });
+        }
+        d.setMonth(d.getMonth() + 1);
       }
 
-      while (currentDate <= endDate) {
-        const month = currentDate.getMonth();
-        const year = currentDate.getFullYear();
+      let html = '';
 
-        // Add month label if new month
-        if (month !== currentMonth) {
-          // Close previous row if mid-week
-          if (currentMonth !== -1) {
-            // Add empty cells to complete the week
-            const dayOfWeek = (currentDate.getDay() + 6) % 7;
-            if (dayOfWeek !== 0) {
-              for (let i = dayOfWeek; i < 7; i++) {
-                html += '<div class="calendar-day empty"></div>';
-              }
-            }
-          }
+      monthsToRender.forEach(m => {
+        const { key: monthKey, year, month } = m;
+        const mStats = calendarMonthData.get(monthKey);
+        const statsText = mStats ? `${mStats.total.toFixed(0)}h · ${mStats.days}d` : '';
 
-          // Get month stats
-          const monthKey = `${year}-${month}`;
-          const mStats = monthStats.get(monthKey);
-          const statsText = mStats ? `${mStats.total.toFixed(0)}h total · ${mStats.days} days` : '';
+        // Start month block
+        html += `<div class="calendar-month-block" data-month="${monthKey}">`;
 
-          html += `<div class="calendar-month-label">${months[month]} ${year}<span class="calendar-month-stats">${statsText}</span></div>`;
-          currentMonth = month;
-
-          // Add empty cells for start of new month
-          const firstDay = new Date(year, month, 1);
-          const startDayOfWeek = (firstDay.getDay() + 6) % 7;
-          for (let i = 0; i < startDayOfWeek; i++) {
-            html += '<div class="calendar-day empty"></div>';
-          }
-        }
-
-        const key = currentDate.toISOString().split('T')[0];
-        const hours = hoursMap.get(key) || 0;
-        const isToday = currentDate.getTime() === today.getTime();
-
-        let dayClass = 'calendar-day';
-        if (hours > 0) {
-          dayClass += ' has-hours';
-          if (hours >= 18) {
-            dayClass += ' very-high';
-          } else if (hours >= 16) {
-            dayClass += ' high';
-          } else if (hours < 10) {
-            dayClass += ' low';
-          }
-        }
-        if (isToday) {
-          dayClass += ' today';
-        }
-
+        // Month label
         html += `
-          <div class="${dayClass}" title="${months[month]} ${currentDate.getDate()}: ${hours > 0 ? hours + 'h' : 'No data'}">
-            <span class="calendar-day-date">${currentDate.getDate()}</span>
-            ${hours > 0 ? `<span class="calendar-day-hours">${hours}</span>` : ''}
+          <div class="calendar-month-label" data-month="${monthKey}">
+            ${months[month]} ${year}
+            <span class="calendar-month-stats">
+              <span class="calendar-month-stats-text">${statsText}</span>
+              <span class="calendar-month-actions">
+                <button class="calendar-month-btn" data-action="stats" data-month="${monthKey}" title="View stats">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                </button>
+                <button class="calendar-month-btn" data-action="toggle" data-month="${monthKey}" title="Collapse/Expand">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+              </span>
+            </span>
           </div>
         `;
 
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
+        // Content wrapper (for collapse)
+        html += `<div class="calendar-month-content" data-month="${monthKey}">`;
 
-      // Fill remaining cells in the last week
-      const lastDayOfWeek = (endDate.getDay() + 6) % 7;
-      if (lastDayOfWeek !== 6) {
-        for (let i = lastDayOfWeek + 1; i <= 6; i++) {
+        // Day headers for this month
+        html += '<div class="calendar-month-header">';
+        dayNames.forEach(day => {
+          html += `<div class="calendar-day-header">${day}</div>`;
+        });
+        html += '</div>';
+
+        // Days grid
+        html += '<div class="calendar-month-grid">';
+
+        // Add empty cells for start of month
+        const firstDay = new Date(year, month, 1);
+        const startDayOfWeek = (firstDay.getDay() + 6) % 7;
+        for (let i = 0; i < startDayOfWeek; i++) {
           html += '<div class="calendar-day empty"></div>';
         }
-      }
+
+        // Add days
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        for (let day = 1; day <= lastDay; day++) {
+          const date = new Date(year, month, day);
+          const key = date.toISOString().split('T')[0];
+          const hours = hoursMap.get(key) || 0;
+          const isToday = date.getTime() === today.getTime();
+
+          let dayClass = 'calendar-day';
+          if (hours > 0) {
+            dayClass += ' has-hours';
+            if (hours >= 24) {
+              dayClass += ' tier-elite';
+            } else if (hours >= 22) {
+              dayClass += ' tier-legendary';
+            } else if (hours >= 20) {
+              dayClass += ' tier-epic';
+            } else if (hours >= 18) {
+              dayClass += ' tier-great';
+            } else if (hours >= 16) {
+              dayClass += ' tier-good';
+            } else if (hours < 10) {
+              dayClass += ' low';
+            }
+          }
+          if (isToday) {
+            dayClass += ' today';
+          }
+
+          html += `
+            <div class="${dayClass}" title="${months[month]} ${day}: ${hours > 0 ? hours + 'h' : 'No data'}">
+              <span class="calendar-day-date">${day}</span>
+              ${hours > 0 ? `<span class="calendar-day-hours">${hours}</span>` : ''}
+            </div>
+          `;
+        }
+
+        // Fill remaining cells
+        const endDayOfWeek = (new Date(year, month + 1, 0).getDay() + 6) % 7;
+        for (let i = endDayOfWeek + 1; i <= 6; i++) {
+          html += '<div class="calendar-day empty"></div>';
+        }
+
+        html += '</div>'; // Close calendar-month-grid
+        html += '</div>'; // Close calendar-month-content
+        html += '</div>'; // Close calendar-month-block
+      });
 
       calendarEl.innerHTML = html;
     }
+
+    // Set up calendar event delegation once (outside render function)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.calendar-month-btn');
+      if (!btn) return;
+      handleCalendarClick(e);
+    });
+
+    function handleCalendarClick(e) {
+      const btn = e.target.closest('.calendar-month-btn');
+      if (!btn) return;
+
+      const action = btn.dataset.action;
+      const monthKey = btn.dataset.month;
+
+      if (action === 'toggle') {
+        const monthLabel = document.querySelector(`.calendar-month-label[data-month="${monthKey}"]`);
+        const monthContent = document.querySelector(`.calendar-month-content[data-month="${monthKey}"]`);
+        if (monthLabel && monthContent) {
+          monthLabel.classList.toggle('collapsed');
+          monthContent.classList.toggle('collapsed');
+          // Rotate chevron
+          const chevron = btn.querySelector('svg');
+          if (chevron) {
+            chevron.style.transform = monthLabel.classList.contains('collapsed') ? 'rotate(-90deg)' : '';
+          }
+        }
+      } else if (action === 'stats') {
+        showMonthStats(monthKey);
+      }
+    }
+
+    function showMonthStats(monthKey) {
+      const stats = calendarMonthData.get(monthKey);
+      if (!stats) return;
+
+      const [year, month] = monthKey.split('-').map(Number);
+      const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+
+      const avg = stats.days > 0 ? stats.total / stats.days : 0;
+      const weekAvg = stats.weekTotals.length > 0 ?
+        stats.weekTotals.reduce((a, b) => a + b, 0) / stats.weekTotals.length : 0;
+
+      // Count tier days
+      const tierCounts = { elite: 0, legendary: 0, epic: 0, great: 0, good: 0 };
+      stats.hours.forEach(h => {
+        if (h >= 24) tierCounts.elite++;
+        else if (h >= 22) tierCounts.legendary++;
+        else if (h >= 20) tierCounts.epic++;
+        else if (h >= 18) tierCounts.great++;
+        else if (h >= 16) tierCounts.good++;
+      });
+
+      document.getElementById('monthStatsTitle').textContent = `${months[month]} ${year}`;
+      document.getElementById('monthStatsGrid').innerHTML = `
+        <div class="month-stat-card">
+          <div class="month-stat-value highlight">${stats.total.toFixed(0)}h</div>
+          <div class="month-stat-label">Total Hours</div>
+        </div>
+        <div class="month-stat-card">
+          <div class="month-stat-value">${stats.days}</div>
+          <div class="month-stat-label">Days Logged</div>
+        </div>
+        <div class="month-stat-card">
+          <div class="month-stat-value">${avg.toFixed(1)}h</div>
+          <div class="month-stat-label">Daily Average</div>
+        </div>
+        <div class="month-stat-card">
+          <div class="month-stat-value">${weekAvg.toFixed(0)}h</div>
+          <div class="month-stat-label">Weekly Average</div>
+          <div class="month-stat-sub">${stats.weekTotals.length} weeks</div>
+        </div>
+        <div class="month-stat-card">
+          <div class="month-stat-value">${stats.best.toFixed(1)}h</div>
+          <div class="month-stat-label">Best Day</div>
+        </div>
+        <div class="month-stat-card">
+          <div class="month-stat-value">${stats.worst === Infinity ? '—' : stats.worst.toFixed(1) + 'h'}</div>
+          <div class="month-stat-label">Lowest Day</div>
+        </div>
+        <div class="month-stat-card" style="grid-column: span 2;">
+          <div class="month-stat-value" style="font-size: 14px;">
+            ${tierCounts.elite > 0 ? `<span style="color: #4a9cff;">${tierCounts.elite} elite</span> · ` : ''}
+            ${tierCounts.legendary > 0 ? `<span style="color: #2a7a7a;">${tierCounts.legendary} legendary</span> · ` : ''}
+            ${tierCounts.epic > 0 ? `<span style="color: var(--emerald);">${tierCounts.epic} epic</span> · ` : ''}
+            ${tierCounts.great > 0 ? `<span style="color: var(--accent);">${tierCounts.great} great</span>` : ''}
+            ${tierCounts.elite + tierCounts.legendary + tierCounts.epic + tierCounts.great === 0 ? '—' : ''}
+          </div>
+          <div class="month-stat-label">High Performance Days (18h+)</div>
+        </div>
+      `;
+
+      document.getElementById('monthStatsModal').classList.add('show');
+    }
+
+    // Close month stats modal
+    document.getElementById('monthStatsClose')?.addEventListener('click', () => {
+      document.getElementById('monthStatsModal').classList.remove('show');
+    });
+
+    document.getElementById('monthStatsModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'monthStatsModal') {
+        document.getElementById('monthStatsModal').classList.remove('show');
+      }
+    });
 
     function renderWeekBreakdown() {
       const currentWeekIdx = getCurrentWeekIndex();
@@ -3929,6 +4847,11 @@
       let html = '';
 
       top.forEach(w => {
+        let medal = '';
+        if (w.rank === 1) medal = medalSvgs.gold;
+        else if (w.rank === 2) medal = medalSvgs.silver;
+        else if (w.rank === 3) medal = medalSvgs.bronze;
+
         html += `
           <div class="week-rank-item top">
             <div class="week-rank-left">
@@ -3938,34 +4861,38 @@
                 ${(w.tags || []).map(t => `<span class="week-rank-tag">${t}</span>`).join('')}
               </div>
             </div>
-            <span class="week-rank-hours">${w.total.toFixed(0)}h</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              ${medal}
+              <span class="week-rank-hours">${w.total.toFixed(0)}h</span>
+            </div>
           </div>
         `;
       });
 
-      if (middle.length > 0) {
-        if (showAllWeeks) {
-          html += `<div class="week-rank-expanded show">`;
-          middle.forEach(w => {
-            html += `
-              <div class="week-rank-item">
-                <div class="week-rank-left">
-                  <span class="week-rank-position">#${w.rank}</span>
-                  <span class="week-rank-num">Week ${w.week}</span>
-                  <div class="week-rank-tags">
-                    ${(w.tags || []).map(t => `<span class="week-rank-tag">${t}</span>`).join('')}
-                  </div>
+      // Only show middle weeks when expanded
+      if (showAllWeeks && middle.length > 0) {
+        middle.forEach(w => {
+          html += `
+            <div class="week-rank-item">
+              <div class="week-rank-left">
+                <span class="week-rank-position">#${w.rank}</span>
+                <span class="week-rank-num">Week ${w.week}</span>
+                <div class="week-rank-tags">
+                  ${(w.tags || []).map(t => `<span class="week-rank-tag">${t}</span>`).join('')}
                 </div>
-                <span class="week-rank-hours">${w.total.toFixed(0)}h</span>
               </div>
-            `;
-          });
-          html += `</div>`;
-        } else {
-          html += `<div class="week-rank-separator">⋮</div>`;
-        }
+              <span class="week-rank-hours">${w.total.toFixed(0)}h</span>
+            </div>
+          `;
+        });
       }
 
+      // Separator between top and bottom (only when not showing all)
+      if (!showAllWeeks && middle.length > 0) {
+        html += '<div class="week-rank-separator">⋮</div>';
+      }
+
+      // Always show bottom weeks
       bottom.forEach(w => {
         html += `
           <div class="week-rank-item bottom">
