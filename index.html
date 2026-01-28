@@ -5934,6 +5934,65 @@
       });
     }
 
+    // Mobile detection
+    function isMobileDevice() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+        || window.innerWidth < 768;
+    }
+
+    // Simplify scene for mobile - remove heavy elements for performance
+    function simplifySceneForMobile() {
+      const scene = document.getElementById('vrScene');
+
+      // Reduce renderer quality for mobile
+      scene.setAttribute('renderer', 'antialias: false; alpha: false; precision: medium; logarithmicDepthBuffer: false');
+
+      // Remove stars
+      const stars = document.getElementById('stars');
+      if (stars) stars.innerHTML = '';
+
+      // Remove floor markers
+      const floorMarkers = document.getElementById('floor-markers');
+      if (floorMarkers) floorMarkers.innerHTML = '';
+
+      // Simplify floor grid - replace with simple circle
+      const floorGrid = document.querySelector('[floor-grid]');
+      if (floorGrid) {
+        floorGrid.removeAttribute('floor-grid');
+        // Add simple floor instead
+        const simpleFloor = document.createElement('a-circle');
+        simpleFloor.setAttribute('radius', '8');
+        simpleFloor.setAttribute('rotation', '-90 0 0');
+        simpleFloor.setAttribute('material', 'color: #0a0c10; opacity: 0.9');
+        floorGrid.parentNode.insertBefore(simpleFloor, floorGrid);
+      }
+
+      // Hide unused containers for mobile
+      const hideContainers = [
+        'vr-calendar-wall', 'vr-daily-distribution', 'vr-weekly-distribution',
+        'vr-trend-chart', 'vr-monthly-overview', 'vr-dayofweek', 'vr-bottom-weeks',
+        'progress-arc', 'title-display'
+      ];
+      hideContainers.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute('visible', 'false');
+      });
+
+      // Remove nebula spheres
+      const nebulas = document.querySelectorAll('a-sphere[radius="18"], a-sphere[radius="22"], a-sphere[radius="25"], a-sphere[radius="15"], a-sphere[radius="20"]');
+      nebulas.forEach(n => n.remove());
+
+      // Remove decorative light pillar
+      const decorativeCylinders = document.querySelectorAll('a-cylinder[position="0 1.75 -6"]');
+      decorativeCylinders.forEach(c => c.remove());
+
+      // Simplify lighting - remove accent lights
+      const lights = scene.querySelectorAll('a-entity[light*="point"][light*="color: #22c55e"], a-entity[light*="point"][light*="color: #ffd700"], a-entity[light*="spot"]');
+      lights.forEach(l => l.remove());
+
+      console.log('VR scene optimized for mobile');
+    }
+
     // Enter VR Mode
     function enterVRMode() {
       if (vrModeActive) return;
@@ -5947,7 +6006,14 @@
 
       // Generate VR content
       setTimeout(() => {
-        generateVRScene();
+        const mobile = isMobileDevice();
+
+        if (mobile) {
+          simplifySceneForMobile();
+          generateVRSceneMobile();
+        } else {
+          generateVRScene();
+        }
 
         // Show scene
         sceneEl.classList.remove('hidden');
@@ -5983,7 +6049,7 @@
       vrModeActive = false;
     }
 
-    // Generate the entire VR scene
+    // Generate the entire VR scene (Desktop - full experience)
     function generateVRScene() {
       generateVRWeeklyChart();
       generateVRStatsRing();
@@ -5997,6 +6063,197 @@
       generateVRMonthlyOverview();
       generateVRDayOfWeek();
       generateVRBottomWeeks();
+    }
+
+    // Generate simplified VR scene for mobile
+    function generateVRSceneMobile() {
+      generateVRWeeklyChartMobile();
+      generateVRStatsMobile();
+      generateVRLogoMobile();
+      generateVRRankingsMobile();
+    }
+
+    // Mobile: Simplified weekly chart - fewer bars, no animations
+    function generateVRWeeklyChartMobile() {
+      const container = document.getElementById('vr-weekly-chart');
+      if (!container) return;
+      container.innerHTML = '';
+
+      // Only show last 10 weeks on mobile
+      const weeks = weeklyData.filter(w => w.total > 0).slice(-10);
+      const maxHours = Math.max(...weeks.map(w => w.total), 100);
+      const maxHeight = 1.8;
+
+      const arcAngle = Math.PI * 0.4;
+      const radius = 3;
+      const startAngle = -arcAngle / 2;
+
+      // Title
+      const chartTitle = document.createElement('a-text');
+      chartTitle.setAttribute('value', 'RECENT WEEKS');
+      chartTitle.setAttribute('position', '0 2.3 -3');
+      chartTitle.setAttribute('align', 'center');
+      chartTitle.setAttribute('color', '#4a9cae');
+      chartTitle.setAttribute('scale', '0.5 0.5 1');
+      container.appendChild(chartTitle);
+
+      weeks.forEach((week, i) => {
+        const angle = startAngle + (i / (weeks.length - 1 || 1)) * arcAngle;
+        const x = Math.sin(angle) * radius;
+        const z = -3 + (-Math.cos(angle) * radius + radius);
+        const height = (week.total / maxHours) * maxHeight + 0.1;
+        const color = getColorForHours(week.total);
+
+        // Simple bar - no animations
+        const bar = document.createElement('a-box');
+        bar.setAttribute('width', '0.2');
+        bar.setAttribute('depth', '0.2');
+        bar.setAttribute('height', height);
+        bar.setAttribute('position', `${x} ${height / 2} ${z}`);
+        bar.setAttribute('material', {
+          color: color,
+          emissive: color,
+          emissiveIntensity: 0.2
+        });
+        container.appendChild(bar);
+
+        // Hours label
+        const hoursText = document.createElement('a-text');
+        hoursText.setAttribute('value', `${Math.round(week.total)}h`);
+        hoursText.setAttribute('position', `${x} ${height + 0.15} ${z}`);
+        hoursText.setAttribute('align', 'center');
+        hoursText.setAttribute('color', '#ffffff');
+        hoursText.setAttribute('scale', '0.25 0.25 1');
+        container.appendChild(hoursText);
+      });
+    }
+
+    // Mobile: Simple stats display - just key numbers
+    function generateVRStatsMobile() {
+      const container = document.getElementById('vr-stats-ring');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const stats = getStats();
+
+      // Single panel with key stats
+      const panel = document.createElement('a-plane');
+      panel.setAttribute('width', '2.5');
+      panel.setAttribute('height', '1.2');
+      panel.setAttribute('position', '0 1.5 2');
+      panel.setAttribute('rotation', '0 180 0');
+      panel.setAttribute('material', {
+        color: '#050608',
+        transparent: true,
+        opacity: 0.9,
+        side: 'double'
+      });
+      container.appendChild(panel);
+
+      // Title
+      const title = document.createElement('a-text');
+      title.setAttribute('value', 'PERFORMANCE STATS');
+      title.setAttribute('position', '0 2.2 2');
+      title.setAttribute('rotation', '0 180 0');
+      title.setAttribute('align', 'center');
+      title.setAttribute('color', '#4a9cae');
+      title.setAttribute('scale', '0.4 0.4 1');
+      container.appendChild(title);
+
+      // Key stats
+      const statsText = [
+        `TOTAL: ${stats.totalHours.toFixed(0)}h`,
+        `AVG/WEEK: ${stats.avgPerWeek.toFixed(1)}h`,
+        `100H+ WEEKS: ${stats.weeksOver100}`,
+        `MULTIPLIER: ${stats.multiplier.toFixed(2)}x`
+      ];
+
+      statsText.forEach((text, i) => {
+        const statLine = document.createElement('a-text');
+        statLine.setAttribute('value', text);
+        statLine.setAttribute('position', `0 ${1.75 - i * 0.25} 1.99`);
+        statLine.setAttribute('rotation', '0 180 0');
+        statLine.setAttribute('align', 'center');
+        statLine.setAttribute('color', i === 0 ? '#22c55e' : '#ffffff');
+        statLine.setAttribute('scale', '0.3 0.3 1');
+        container.appendChild(statLine);
+      });
+    }
+
+    // Mobile: Simple logo - just text
+    function generateVRLogoMobile() {
+      const container = document.getElementById('vr-logo');
+      if (!container) return;
+      container.innerHTML = '';
+
+      // Simple D8F text
+      const logoText = document.createElement('a-text');
+      logoText.setAttribute('value', 'D8F');
+      logoText.setAttribute('position', '0 0 0');
+      logoText.setAttribute('align', 'center');
+      logoText.setAttribute('color', '#4a9cae');
+      logoText.setAttribute('scale', '3 3 1');
+      container.appendChild(logoText);
+
+      // Subtitle
+      const subtitle = document.createElement('a-text');
+      subtitle.setAttribute('value', 'THE NEXUS');
+      subtitle.setAttribute('position', '0 -0.6 0');
+      subtitle.setAttribute('align', 'center');
+      subtitle.setAttribute('color', '#666666');
+      subtitle.setAttribute('scale', '0.8 0.8 1');
+      container.appendChild(subtitle);
+    }
+
+    // Mobile: Simple top 5 rankings - positioned in front right
+    function generateVRRankingsMobile() {
+      const container = document.getElementById('vr-rankings');
+      if (!container) return;
+      container.innerHTML = '';
+
+      // Reposition for mobile - more in front of user
+      container.setAttribute('position', '2.5 0.5 -2');
+      container.setAttribute('rotation', '0 -25 0');
+
+      const sorted = [...weeklyData]
+        .filter(w => w.total > 0)
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5);
+
+      // Panel
+      const panel = document.createElement('a-plane');
+      panel.setAttribute('width', '1.6');
+      panel.setAttribute('height', '1.8');
+      panel.setAttribute('position', '0 0.9 0');
+      panel.setAttribute('material', {
+        color: '#050608',
+        transparent: true,
+        opacity: 0.9,
+        side: 'double'
+      });
+      container.appendChild(panel);
+
+      // Title
+      const title = document.createElement('a-text');
+      title.setAttribute('value', 'TOP WEEKS');
+      title.setAttribute('position', '0 1.65 0.01');
+      title.setAttribute('align', 'center');
+      title.setAttribute('color', '#ffd700');
+      title.setAttribute('scale', '0.35 0.35 1');
+      container.appendChild(title);
+
+      sorted.forEach((week, i) => {
+        const y = 1.35 - i * 0.28;
+        const medalColors = ['#ffd700', '#c0c0c0', '#cd7f32', '#4a9cae', '#4a9cae'];
+
+        const line = document.createElement('a-text');
+        line.setAttribute('value', `#${i + 1}  Week ${week.week}  ${Math.round(week.total)}h`);
+        line.setAttribute('position', `0 ${y} 0.01`);
+        line.setAttribute('align', 'center');
+        line.setAttribute('color', medalColors[i]);
+        line.setAttribute('scale', '0.25 0.25 1');
+        container.appendChild(line);
+      });
     }
 
     // Generate 3D Weekly Bar Chart - Immersive data visualization
