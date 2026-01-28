@@ -8,6 +8,8 @@
   <meta name="theme-color" content="#08090a">
   <title>D8F</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- A-Frame VR Libraries -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -283,12 +285,160 @@
       display: block;
     }
 
-    .hero-logo {
+    .hero-logo-container {
+      position: relative;
+      margin: 0 auto 24px;
       width: 320px;
       max-width: 90%;
+      padding: 30px 0 50px;
+    }
+
+    /* Ambient glow - soft, premium lighting */
+    .hero-logo-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-logo-glow::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 140%;
+      height: 200%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(
+        ellipse 60% 40% at 50% 45%,
+        rgba(35, 75, 120, 0.25) 0%,
+        rgba(25, 55, 90, 0.12) 35%,
+        transparent 70%
+      );
+      filter: blur(30px);
+      animation: glowPulse 6s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    }
+
+    .hero-logo-wrapper {
+      perspective: 800px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-logo {
+      width: 100%;
       height: auto;
-      margin: 0 auto 24px;
       display: block;
+      transform-style: preserve-3d;
+      animation: logoHover 8s ease-in-out infinite;
+      filter:
+        drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))
+        drop-shadow(0 12px 24px rgba(0, 0, 0, 0.3))
+        drop-shadow(0 0 40px rgba(35, 75, 120, 0.15));
+      transition: filter 0.5s ease;
+    }
+
+    .hero-logo:hover {
+      filter:
+        drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5))
+        drop-shadow(0 16px 32px rgba(0, 0, 0, 0.35))
+        drop-shadow(0 0 60px rgba(45, 95, 150, 0.25));
+    }
+
+    @keyframes logoHover {
+      0%, 100% {
+        transform: translateY(0) rotateX(2deg);
+      }
+      50% {
+        transform: translateY(-8px) rotateX(-2deg);
+      }
+    }
+
+    /* Ground reflection */
+    .hero-logo-reflection {
+      position: relative;
+      width: 80%;
+      height: 80px;
+      margin: 0 auto;
+      margin-top: -5px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .hero-logo-reflection::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: linear-gradient(to bottom,
+        rgba(35, 75, 120, 0.08) 0%,
+        transparent 60%
+      );
+      filter: blur(8px);
+      transform: scaleY(0.5);
+      transform-origin: top center;
+      animation: reflectionHover 8s ease-in-out infinite;
+    }
+
+    @keyframes reflectionHover {
+      0%, 100% { opacity: 0.6; transform: scaleY(0.5); }
+      50% { opacity: 0.3; transform: scaleY(0.3); }
+    }
+
+    /* Subtle shine sweep */
+    .hero-logo-shine {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+      border-radius: 12px;
+      opacity: 0;
+      animation: shineAppear 12s ease-in-out infinite;
+    }
+
+    .hero-logo-shine::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(
+        105deg,
+        transparent 20%,
+        rgba(255, 255, 255, 0.04) 45%,
+        rgba(255, 255, 255, 0.08) 50%,
+        rgba(255, 255, 255, 0.04) 55%,
+        transparent 80%
+      );
+      animation: shineSweep 12s ease-in-out infinite;
+    }
+
+    @keyframes shineAppear {
+      0%, 35%, 100% { opacity: 0; }
+      40%, 70% { opacity: 1; }
+      75% { opacity: 0; }
+    }
+
+    @keyframes shineSweep {
+      0%, 35% { left: -100%; }
+      70% { left: 250%; }
+      100% { left: 250%; }
     }
 
     .gate-logo {
@@ -298,7 +448,7 @@
     }
 
     @media (min-width: 768px) {
-      .hero-logo {
+      .hero-logo-container {
         width: 400px;
       }
       .gate-logo {
@@ -3052,6 +3202,116 @@
       font-size: 12px;
       height: 18px;
     }
+
+    /* VR Mode Styles */
+    #vrScene {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10000;
+      background: #030508 !important;
+    }
+
+    #vrScene canvas {
+      background: #030508 !important;
+    }
+
+    #vrScene.hidden {
+      display: none !important;
+    }
+
+    .vr-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(42, 90, 143, 0.3) 0%, rgba(30, 58, 95, 0.2) 100%);
+      border: 1px solid rgba(42, 90, 143, 0.4);
+      color: var(--accent);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .vr-toggle-btn:hover {
+      background: linear-gradient(135deg, rgba(42, 90, 143, 0.5) 0%, rgba(30, 58, 95, 0.4) 100%);
+      border-color: rgba(42, 90, 143, 0.6);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(42, 90, 143, 0.3);
+    }
+
+    .vr-toggle-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .vr-exit-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10001;
+      background: rgba(10, 12, 14, 0.9);
+      border: 1px solid rgba(42, 90, 143, 0.4);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: none;
+      transition: all 0.3s;
+    }
+
+    .vr-exit-btn:hover {
+      background: rgba(239, 68, 68, 0.3);
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    .vr-exit-btn.visible {
+      display: block;
+    }
+
+    .vr-loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0a0c0e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10002;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s;
+    }
+
+    .vr-loading.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .vr-loading-text {
+      color: var(--accent);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 20px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -3165,6 +3425,12 @@
       <div class="nav-tabs">
         <button class="nav-tab active" data-tab="dashboard">Dashboard</button>
         <button class="nav-tab" data-tab="tracker">Track</button>
+        <button class="vr-toggle-btn" id="enterVRBtn" onclick="enterVRMode()">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.74 6H3.26C2.01 6 1 7.01 1 8.26v7.48C1 16.99 2.01 18 3.26 18h17.48c1.25 0 2.26-1.01 2.26-2.26V8.26C23 7.01 21.99 6 20.74 6zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zM5 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm14 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+          </svg>
+          Enter VR
+        </button>
       </div>
     </div>
   </nav>
@@ -3173,7 +3439,11 @@
     <!-- Dashboard Page -->
     <div id="dashboard" class="page active">
       <div class="header">
-        <svg class="hero-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 160">
+        <div class="hero-logo-container">
+          <div class="hero-logo-glow"></div>
+          <div class="hero-logo-wrapper">
+            <div class="hero-logo-shine"></div>
+            <svg class="hero-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 160">
           <defs>
             <style>
               @keyframes shimmerD {
@@ -3236,7 +3506,10 @@
             <text x="295" y="118" font-family="Arial Black, Arial, sans-serif" font-size="120" font-weight="700" text-anchor="middle" fill="url(#metalCharcoal)" filter="url(#dropShadow)">F</text>
             <text x="295" y="118" font-family="Arial Black, Arial, sans-serif" font-size="120" font-weight="700" text-anchor="middle" fill="url(#fHighlight)" class="f-highlight">F</text>
           </g>
-        </svg>
+            </svg>
+          </div>
+          <div class="hero-logo-reflection"></div>
+        </div>
         <div class="brand-divider"></div>
         <div class="header-label">Performance Metrics</div>
       </div>
@@ -4722,7 +4995,7 @@
             x: {
               stacked: true,
               grid: { display: false, drawBorder: false },
-              ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } },
+              ticks: { color: '#555555', font: { size: 10 } },
               border: { display: false }
             },
             y: {
@@ -5407,6 +5680,1718 @@
     if (document.getElementById('gateOverlay').classList.contains('unlocked')) {
       initApp();
     }
+
+    // ============================================
+    // VR MODE - THE NEXUS COMMAND CENTER
+    // ============================================
+
+    let vrModeActive = false;
+
+    // Register A-Frame components
+    if (typeof AFRAME !== 'undefined') {
+
+      // Data Bar Component - 3D visualization bar
+      AFRAME.registerComponent('data-bar', {
+        schema: {
+          height: { type: 'number', default: 1 },
+          color: { type: 'color', default: '#2a5a8f' },
+          week: { type: 'number', default: 0 },
+          hours: { type: 'number', default: 0 }
+        },
+        init: function() {
+          const data = this.data;
+          const el = this.el;
+
+          // Main bar
+          const bar = document.createElement('a-box');
+          bar.setAttribute('width', '0.18');
+          bar.setAttribute('depth', '0.18');
+          bar.setAttribute('height', data.height);
+          bar.setAttribute('position', `0 ${data.height / 2} 0`);
+          bar.setAttribute('material', {
+            color: data.color,
+            emissive: data.color,
+            emissiveIntensity: 0.3,
+            metalness: 0.6,
+            roughness: 0.3
+          });
+          bar.classList.add('clickable');
+          bar.setAttribute('animation', {
+            property: 'material.emissiveIntensity',
+            from: '0.2',
+            to: '0.5',
+            dir: 'alternate',
+            dur: 1500 + Math.random() * 500,
+            loop: true,
+            easing: 'easeInOutSine'
+          });
+          el.appendChild(bar);
+
+          // Hover animations
+          bar.setAttribute('animation__mouseenter', {
+            property: 'scale',
+            to: '1.15 1.02 1.15',
+            dur: 150,
+            startEvents: 'mouseenter'
+          });
+          bar.setAttribute('animation__mouseleave', {
+            property: 'scale',
+            to: '1 1 1',
+            dur: 150,
+            startEvents: 'mouseleave'
+          });
+
+          // Hours on top
+          const hoursText = document.createElement('a-text');
+          hoursText.setAttribute('value', `${data.hours}h`);
+          hoursText.setAttribute('position', `0 ${data.height + 0.12} 0`);
+          hoursText.setAttribute('align', 'center');
+          hoursText.setAttribute('color', '#ffffff');
+          hoursText.setAttribute('scale', '0.28 0.28 1');
+          el.appendChild(hoursText);
+
+          // Base glow
+          const glow = document.createElement('a-ring');
+          glow.setAttribute('radius-inner', '0.12');
+          glow.setAttribute('radius-outer', '0.16');
+          glow.setAttribute('rotation', '-90 0 0');
+          glow.setAttribute('position', '0 0.01 0');
+          glow.setAttribute('material', {
+            color: data.color,
+            emissive: data.color,
+            emissiveIntensity: 0.6,
+            transparent: true,
+            opacity: 0.5
+          });
+          el.appendChild(glow);
+        }
+      });
+
+      // Stat Panel Component - Clean holographic stat display
+      AFRAME.registerComponent('stat-panel', {
+        schema: {
+          value: { type: 'string', default: '0' },
+          label: { type: 'string', default: 'STAT' },
+          sublabel: { type: 'string', default: '' },
+          highlight: { type: 'boolean', default: false }
+        },
+        init: function() {
+          const data = this.data;
+          const el = this.el;
+
+          const panelColor = data.highlight ? '#22c55e' : '#4a9cae';
+
+          // Panel background
+          const bg = document.createElement('a-plane');
+          bg.setAttribute('width', '1');
+          bg.setAttribute('height', '0.6');
+          bg.setAttribute('material', {
+            color: '#050608',
+            transparent: true,
+            opacity: 0.85,
+            side: 'double'
+          });
+          el.appendChild(bg);
+
+          // Border
+          const border = document.createElement('a-plane');
+          border.setAttribute('width', '1.02');
+          border.setAttribute('height', '0.62');
+          border.setAttribute('position', '0 0 -0.005');
+          border.setAttribute('material', {
+            color: panelColor,
+            emissive: panelColor,
+            emissiveIntensity: 0.4,
+            transparent: true,
+            opacity: 0.5,
+            side: 'double'
+          });
+          el.appendChild(border);
+
+          // Value text
+          const valueText = document.createElement('a-text');
+          valueText.setAttribute('value', data.value);
+          valueText.setAttribute('position', '0 0.08 0.01');
+          valueText.setAttribute('align', 'center');
+          valueText.setAttribute('color', data.highlight ? '#22c55e' : '#ffffff');
+          valueText.setAttribute('scale', '0.55 0.55 1');
+          el.appendChild(valueText);
+
+          // Label text
+          const labelText = document.createElement('a-text');
+          labelText.setAttribute('value', data.label);
+          labelText.setAttribute('position', '0 -0.1 0.01');
+          labelText.setAttribute('align', 'center');
+          labelText.setAttribute('color', panelColor);
+          labelText.setAttribute('scale', '0.22 0.22 1');
+          el.appendChild(labelText);
+
+          // Sublabel text
+          if (data.sublabel) {
+            const subText = document.createElement('a-text');
+            subText.setAttribute('value', data.sublabel);
+            subText.setAttribute('position', '0 -0.2 0.01');
+            subText.setAttribute('align', 'center');
+            subText.setAttribute('color', '#555555');
+            subText.setAttribute('scale', '0.16 0.16 1');
+            el.appendChild(subText);
+          }
+
+          // Hover effects
+          el.setAttribute('animation__hover', {
+            property: 'scale',
+            to: '1.05 1.05 1',
+            dur: 150,
+            startEvents: 'mouseenter'
+          });
+          el.setAttribute('animation__unhover', {
+            property: 'scale',
+            to: '1 1 1',
+            dur: 150,
+            startEvents: 'mouseleave'
+          });
+        }
+      });
+
+      // Floor Grid Component - Clean sci-fi floor
+      AFRAME.registerComponent('floor-grid', {
+        init: function() {
+          const el = this.el;
+
+          // Center glow
+          const center = document.createElement('a-cylinder');
+          center.setAttribute('radius', '0.8');
+          center.setAttribute('height', '0.02');
+          center.setAttribute('position', '0 0.01 0');
+          center.setAttribute('material', {
+            color: '#4a9cae',
+            emissive: '#4a9cae',
+            emissiveIntensity: 0.5,
+            transparent: true,
+            opacity: 0.3
+          });
+          center.setAttribute('animation', {
+            property: 'material.emissiveIntensity',
+            from: '0.3',
+            to: '0.7',
+            dur: 2000,
+            dir: 'alternate',
+            loop: true
+          });
+          el.appendChild(center);
+
+          // Concentric rings
+          for (let i = 1; i <= 6; i++) {
+            const ring = document.createElement('a-torus');
+            ring.setAttribute('radius', i * 1.5);
+            ring.setAttribute('radius-tubular', '0.015');
+            ring.setAttribute('rotation', '90 0 0');
+            ring.setAttribute('position', '0 0.005 0');
+            ring.setAttribute('material', {
+              color: '#4a9cae',
+              emissive: '#4a9cae',
+              emissiveIntensity: 0.4 - (i * 0.05),
+              transparent: true,
+              opacity: 0.3 - (i * 0.04)
+            });
+            el.appendChild(ring);
+          }
+
+          // Radial lines
+          for (let i = 0; i < 12; i++) {
+            const angle = (i / 12) * Math.PI * 2;
+            const line = document.createElement('a-box');
+            line.setAttribute('width', '0.015');
+            line.setAttribute('height', '0.003');
+            line.setAttribute('depth', '9');
+            line.setAttribute('position', `${Math.sin(angle) * 4.5} 0.003 ${Math.cos(angle) * 4.5}`);
+            line.setAttribute('rotation', `0 ${(angle * 180 / Math.PI)} 0`);
+            line.setAttribute('material', {
+              color: '#1e3a5f',
+              emissive: '#1e3a5f',
+              emissiveIntensity: 0.3,
+              transparent: true,
+              opacity: 0.2
+            });
+            el.appendChild(line);
+          }
+
+          // Outer boundary
+          const boundary = document.createElement('a-torus');
+          boundary.setAttribute('radius', '9');
+          boundary.setAttribute('radius-tubular', '0.03');
+          boundary.setAttribute('rotation', '90 0 0');
+          boundary.setAttribute('position', '0 0.01 0');
+          boundary.setAttribute('material', {
+            color: '#1e3a5f',
+            emissive: '#1e3a5f',
+            emissiveIntensity: 0.4,
+            transparent: true,
+            opacity: 0.4
+          });
+          el.appendChild(boundary);
+        }
+      });
+    }
+
+    // Enter VR Mode
+    function enterVRMode() {
+      if (vrModeActive) return;
+
+      const loadingEl = document.getElementById('vrLoading');
+      const sceneEl = document.getElementById('vrScene');
+      const exitBtn = document.getElementById('vrExitBtn');
+
+      // Show loading
+      loadingEl.classList.add('visible');
+
+      // Generate VR content
+      setTimeout(() => {
+        generateVRScene();
+
+        // Show scene
+        sceneEl.classList.remove('hidden');
+        exitBtn.classList.add('visible');
+
+        // Hide 2D content
+        document.querySelector('.container').style.display = 'none';
+        document.querySelector('nav').style.display = 'none';
+
+        // Hide loading
+        setTimeout(() => {
+          loadingEl.classList.remove('visible');
+        }, 500);
+
+        vrModeActive = true;
+      }, 800);
+    }
+
+    // Exit VR Mode
+    function exitVRMode() {
+      if (!vrModeActive) return;
+
+      const sceneEl = document.getElementById('vrScene');
+      const exitBtn = document.getElementById('vrExitBtn');
+
+      sceneEl.classList.add('hidden');
+      exitBtn.classList.remove('visible');
+
+      // Show 2D content
+      document.querySelector('.container').style.display = '';
+      document.querySelector('nav').style.display = '';
+
+      vrModeActive = false;
+    }
+
+    // Generate the entire VR scene
+    function generateVRScene() {
+      generateVRWeeklyChart();
+      generateVRStatsRing();
+      generateVRLogo();
+      generateVRCalendarWall();
+      generateVRRankings();
+      generateVRProgressArc();
+      generateVRDailyDistribution();
+      generateVRWeeklyDistribution();
+      generateVRTrendChart();
+      generateVRMonthlyOverview();
+      generateVRDayOfWeek();
+      generateVRBottomWeeks();
+    }
+
+    // Generate 3D Weekly Bar Chart - Immersive data visualization
+    function generateVRWeeklyChart() {
+      const container = document.getElementById('vr-weekly-chart');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const weeks = weeklyData.filter(w => w.total > 0);
+      const maxHours = Math.max(...weeks.map(w => w.total), 100);
+      const maxHeight = 2.2;
+
+      // Arrange in a tighter curved arc in front of user
+      const arcAngle = Math.PI * 0.45; // Tighter 81 degree arc
+      const radius = 4; // Closer to user
+      const startAngle = -arcAngle / 2;
+
+      // Add arc base track
+      const arcTrack = document.createElement('a-torus');
+      arcTrack.setAttribute('radius', radius);
+      arcTrack.setAttribute('radius-tubular', '0.02');
+      arcTrack.setAttribute('rotation', '90 0 0');
+      arcTrack.setAttribute('position', '0 0 -4');
+      arcTrack.setAttribute('segments-tubular', '64');
+      arcTrack.setAttribute('material', {
+        color: '#1e3a5f',
+        emissive: '#1e3a5f',
+        emissiveIntensity: 0.4,
+        transparent: true,
+        opacity: 0.35
+      });
+      container.appendChild(arcTrack);
+
+      // Add chart title
+      const chartTitle = document.createElement('a-text');
+      chartTitle.setAttribute('value', 'WEEKLY PERFORMANCE');
+      chartTitle.setAttribute('position', '0 2.8 -4');
+      chartTitle.setAttribute('align', 'center');
+      chartTitle.setAttribute('color', '#4a9cae');
+      chartTitle.setAttribute('scale', '0.5 0.5 1');
+      container.appendChild(chartTitle);
+
+      // Center offset for the chart (in front of user)
+      const centerZ = -4;
+
+      weeks.forEach((week, i) => {
+        const angle = startAngle + (i / (weeks.length - 1)) * arcAngle;
+        const x = Math.sin(angle) * radius;
+        const z = centerZ + (-Math.cos(angle) * radius + radius); // Offset so arc is in front
+        const height = (week.total / maxHours) * maxHeight + 0.12;
+        const color = getColorForHours(week.total);
+
+        const bar = document.createElement('a-entity');
+        bar.setAttribute('data-bar', {
+          height: height,
+          color: color,
+          week: week.week,
+          hours: Math.round(week.total)
+        });
+        bar.setAttribute('position', `${x} 0 ${z}`);
+        bar.setAttribute('rotation', `0 ${(-angle * 180 / Math.PI)} 0`);
+
+        // Entrance animation - staggered wave
+        bar.setAttribute('animation__enter', {
+          property: 'scale',
+          from: '1 0 1',
+          to: '1 1 1',
+          dur: 800,
+          delay: i * 25,
+          easing: 'easeOutElastic'
+        });
+
+        container.appendChild(bar);
+      });
+
+      // Add threshold line at 100h mark
+      const thresholdHeight = (100 / maxHours) * maxHeight;
+      const thresholdLabel = document.createElement('a-text');
+      thresholdLabel.setAttribute('value', '— 100h TARGET —');
+      thresholdLabel.setAttribute('position', `0 ${thresholdHeight} ${centerZ - 0.5}`);
+      thresholdLabel.setAttribute('align', 'center');
+      thresholdLabel.setAttribute('color', '#22c55e');
+      thresholdLabel.setAttribute('scale', '0.3 0.3 1');
+      thresholdLabel.setAttribute('opacity', '0.7');
+      container.appendChild(thresholdLabel);
+    }
+
+    // Generate Stats Ring - Arranged in a row behind user
+    function generateVRStatsRing() {
+      const container = document.getElementById('vr-stats-ring');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const stats = getStats();
+      const panels = [
+        { value: stats.totalHours.toFixed(0) + 'h', label: 'TOTAL HOURS', sublabel: 'accumulated', highlight: false },
+        { value: stats.daysLogged.toString(), label: 'DAYS TRACKED', sublabel: 'consecutive', highlight: false },
+        { value: stats.avgPerWeek.toFixed(1) + 'h', label: 'AVG/WEEK', sublabel: 'performance', highlight: true },
+        { value: stats.weeksOver100.toString(), label: '100H+ WEEKS', sublabel: `of ${stats.totalWeeks} total`, highlight: false },
+        { value: stats.multiplier.toFixed(2) + 'x', label: 'MULTIPLIER', sublabel: 'vs standard', highlight: false }
+      ];
+
+      const height = 1.5;
+      const spacing = 1.3;
+      const startX = -((panels.length - 1) * spacing) / 2;
+
+      // Stats section title
+      const sectionTitle = document.createElement('a-text');
+      sectionTitle.setAttribute('value', 'PERFORMANCE METRICS');
+      sectionTitle.setAttribute('position', '0 2.3 0');
+      sectionTitle.setAttribute('align', 'center');
+      sectionTitle.setAttribute('color', '#4a9cae');
+      sectionTitle.setAttribute('scale', '0.45 0.45 1');
+      container.appendChild(sectionTitle);
+
+      // Base track line
+      const trackLine = document.createElement('a-box');
+      trackLine.setAttribute('width', (panels.length - 1) * spacing + 1.2);
+      trackLine.setAttribute('height', '0.015');
+      trackLine.setAttribute('depth', '0.01');
+      trackLine.setAttribute('position', `0 ${height - 0.38} 0`);
+      trackLine.setAttribute('material', {
+        color: '#4a9cae',
+        emissive: '#4a9cae',
+        emissiveIntensity: 0.5,
+        transparent: true,
+        opacity: 0.4
+      });
+      container.appendChild(trackLine);
+
+      panels.forEach((panel, i) => {
+        const x = startX + i * spacing;
+
+        const entity = document.createElement('a-entity');
+        entity.setAttribute('stat-panel', panel);
+        entity.setAttribute('position', `${x} ${height} 0`);
+        entity.setAttribute('rotation', '0 180 0'); // Face the user
+
+        // Entrance animation - slide in from sides
+        const startOffset = i < panels.length / 2 ? -2 : 2;
+        entity.setAttribute('animation__enter', {
+          property: 'position',
+          from: `${x + startOffset} ${height - 0.5} 0`,
+          to: `${x} ${height} 0`,
+          dur: 800,
+          delay: 400 + i * 80,
+          easing: 'easeOutCubic'
+        });
+
+        container.appendChild(entity);
+      });
+    }
+
+    // Generate 3D Logo - Simplified D8F hologram
+    function generateVRLogo() {
+      const container = document.getElementById('vr-logo');
+      if (!container) return;
+      container.innerHTML = '';
+
+      // Outer glow sphere
+      const outerGlow = document.createElement('a-sphere');
+      outerGlow.setAttribute('radius', '2');
+      outerGlow.setAttribute('position', '0 0 0');
+      outerGlow.setAttribute('material', {
+        color: '#1e3a5f',
+        emissive: '#1e3a5f',
+        emissiveIntensity: 0.2,
+        transparent: true,
+        opacity: 0.08,
+        side: 'double'
+      });
+      outerGlow.setAttribute('animation', {
+        property: 'scale',
+        from: '1 1 1',
+        to: '1.08 1.08 1.08',
+        dir: 'alternate',
+        dur: 3000,
+        loop: true,
+        easing: 'easeInOutSine'
+      });
+      container.appendChild(outerGlow);
+
+      // D text
+      const dText = document.createElement('a-text');
+      dText.setAttribute('value', 'D');
+      dText.setAttribute('position', '-1.1 0 0');
+      dText.setAttribute('align', 'center');
+      dText.setAttribute('color', '#4a9cae');
+      dText.setAttribute('scale', '4 4 1');
+      container.appendChild(dText);
+
+      // 8 text - central, glowing
+      const eightText = document.createElement('a-text');
+      eightText.setAttribute('value', '8');
+      eightText.setAttribute('position', '0 0 0');
+      eightText.setAttribute('align', 'center');
+      eightText.setAttribute('scale', '4 4 1');
+      eightText.setAttribute('animation', {
+        property: 'color',
+        from: '#4a9cae',
+        to: '#22c55e',
+        dir: 'alternate',
+        dur: 2000,
+        loop: true,
+        easing: 'easeInOutSine'
+      });
+      container.appendChild(eightText);
+
+      // F text
+      const fText = document.createElement('a-text');
+      fText.setAttribute('value', 'F');
+      fText.setAttribute('position', '1.1 0 0');
+      fText.setAttribute('align', 'center');
+      fText.setAttribute('color', '#4a9cae');
+      fText.setAttribute('scale', '4 4 1');
+      container.appendChild(fText);
+
+      // Single orbital ring
+      const ring = document.createElement('a-torus');
+      ring.setAttribute('radius', '1.6');
+      ring.setAttribute('radius-tubular', '0.015');
+      ring.setAttribute('rotation', '70 0 0');
+      ring.setAttribute('material', {
+        color: '#4a9cae',
+        emissive: '#4a9cae',
+        emissiveIntensity: 0.5,
+        transparent: true,
+        opacity: 0.4
+      });
+      ring.setAttribute('animation', {
+        property: 'rotation',
+        from: '70 0 0',
+        to: '70 360 0',
+        dur: 20000,
+        loop: true,
+        easing: 'linear'
+      });
+      container.appendChild(ring);
+
+      // A few floating particles
+      const particleColors = ['#4a9cae', '#22c55e', '#ffffff'];
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const radius = 1.3;
+        const y = Math.sin(angle * 2) * 0.3;
+        const particle = document.createElement('a-sphere');
+        particle.setAttribute('radius', '0.03');
+        particle.setAttribute('position', `${Math.cos(angle) * radius} ${y} ${Math.sin(angle) * radius}`);
+        particle.setAttribute('material', {
+          color: particleColors[i % particleColors.length],
+          emissive: particleColors[i % particleColors.length],
+          emissiveIntensity: 0.8
+        });
+        particle.setAttribute('animation', {
+          property: 'position',
+          to: `${Math.cos(angle + 0.5) * radius} ${-y} ${Math.sin(angle + 0.5) * radius}`,
+          dur: 3000 + i * 400,
+          loop: true,
+          dir: 'alternate',
+          easing: 'easeInOutSine'
+        });
+        container.appendChild(particle);
+      }
+    }
+
+    // Generate Calendar Wall - 3D heatmap visualization
+    function generateVRCalendarWall() {
+      const container = document.getElementById('vr-calendar-wall');
+      if (!container) return;
+      container.innerHTML = '';
+
+      // Get data map
+      const today = new Date();
+      const hoursMap = new Map();
+
+      weeklyData.forEach(week => {
+        if (week.mondayDate && week.dayData) {
+          const monday = new Date(week.mondayDate);
+          week.dayData.forEach((day, i) => {
+            if (day.hours > 0) {
+              const date = new Date(monday);
+              date.setDate(date.getDate() + i);
+              hoursMap.set(date.toISOString().split('T')[0], day.hours);
+            }
+          });
+        }
+      });
+
+      // Panel backing
+      const panel = document.createElement('a-box');
+      panel.setAttribute('width', '2.3');
+      panel.setAttribute('height', '2.8');
+      panel.setAttribute('depth', '0.05');
+      panel.setAttribute('position', '0 1 -0.1');
+      panel.setAttribute('material', {
+        color: '#030508',
+        transparent: true,
+        opacity: 0.85
+      });
+      container.appendChild(panel);
+
+      // Border frame
+      const borderTop = document.createElement('a-box');
+      borderTop.setAttribute('width', '2.35');
+      borderTop.setAttribute('height', '0.02');
+      borderTop.setAttribute('depth', '0.01');
+      borderTop.setAttribute('position', '0 2.42 0');
+      borderTop.setAttribute('material', { color: '#4a9cae', emissive: '#4a9cae', emissiveIntensity: 0.6 });
+      container.appendChild(borderTop);
+
+      const borderBottom = document.createElement('a-box');
+      borderBottom.setAttribute('width', '2.35');
+      borderBottom.setAttribute('height', '0.02');
+      borderBottom.setAttribute('depth', '0.01');
+      borderBottom.setAttribute('position', '0 -0.42 0');
+      borderBottom.setAttribute('material', { color: '#4a9cae', emissive: '#4a9cae', emissiveIntensity: 0.6 });
+      container.appendChild(borderBottom);
+
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const firstDay = new Date(year, month, 1).getDay();
+
+      const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+
+      // Month title
+      const title = document.createElement('a-text');
+      title.setAttribute('value', `${monthNames[month]} ${year}`);
+      title.setAttribute('position', '0 2.2 0.01');
+      title.setAttribute('align', 'center');
+      title.setAttribute('color', '#4a9cae');
+      title.setAttribute('scale', '0.5 0.5 1');
+      container.appendChild(title);
+
+      // Day headers
+      const dayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+      const cellSize = 0.26;
+      const gap = 0.06;
+      const startX = -((7 * (cellSize + gap)) / 2) + cellSize / 2;
+      const headerY = 1.9;
+
+      dayNames.forEach((d, i) => {
+        const dayHeader = document.createElement('a-text');
+        dayHeader.setAttribute('value', d);
+        dayHeader.setAttribute('position', `${startX + i * (cellSize + gap)} ${headerY} 0.01`);
+        dayHeader.setAttribute('align', 'center');
+        dayHeader.setAttribute('color', '#666666');
+        dayHeader.setAttribute('scale', '0.22 0.22 1');
+        container.appendChild(dayHeader);
+      });
+
+      const startY = 1.65;
+      let row = 0;
+      let col = (firstDay + 6) % 7;
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const hours = hoursMap.get(dateStr) || 0;
+
+        const x = startX + col * (cellSize + gap);
+        const y = startY - row * (cellSize + gap);
+
+        let color = '#151820';
+        let depth = 0.04;
+        let emissive = 0.05;
+
+        if (hours >= 24) {
+          color = '#2a5a8f'; depth = 0.35; emissive = 0.6;
+        } else if (hours >= 22) {
+          color = '#1a5c5c'; depth = 0.28; emissive = 0.5;
+        } else if (hours >= 20) {
+          color = '#22c55e'; depth = 0.24; emissive = 0.45;
+        } else if (hours >= 18) {
+          color = '#4a9cae'; depth = 0.2; emissive = 0.4;
+        } else if (hours >= 16) {
+          color = '#2a4a6f'; depth = 0.16; emissive = 0.3;
+        } else if (hours >= 14) {
+          color = '#1e3a5f'; depth = 0.12; emissive = 0.2;
+        } else if (hours > 0) {
+          color = '#1a2a40'; depth = 0.08; emissive = 0.12;
+        }
+
+        const cell = document.createElement('a-box');
+        cell.setAttribute('width', cellSize);
+        cell.setAttribute('height', cellSize);
+        cell.setAttribute('depth', depth);
+        cell.setAttribute('position', `${x} ${y} ${depth / 2}`);
+        cell.setAttribute('material', {
+          color: color,
+          emissive: color,
+          emissiveIntensity: emissive,
+          metalness: 0.3,
+          roughness: 0.7
+        });
+
+        // Entrance animation
+        cell.setAttribute('animation__enter', {
+          property: 'scale',
+          from: '0 0 0',
+          to: '1 1 1',
+          dur: 400,
+          delay: 800 + (row * 7 + col) * 20,
+          easing: 'easeOutBack'
+        });
+
+        container.appendChild(cell);
+
+        // Day number label for high-value days
+        if (hours >= 18) {
+          const dayLabel = document.createElement('a-text');
+          dayLabel.setAttribute('value', day.toString());
+          dayLabel.setAttribute('position', `${x} ${y} ${depth + 0.02}`);
+          dayLabel.setAttribute('align', 'center');
+          dayLabel.setAttribute('color', '#ffffff');
+          dayLabel.setAttribute('scale', '0.15 0.15 1');
+          container.appendChild(dayLabel);
+        }
+
+        col++;
+        if (col > 6) {
+          col = 0;
+          row++;
+        }
+      }
+
+      // Legend
+      const legendY = -0.2;
+      const legendColors = [
+        { color: '#1a2a40', label: '<14h' },
+        { color: '#1e3a5f', label: '14h' },
+        { color: '#4a9cae', label: '18h' },
+        { color: '#22c55e', label: '20h' },
+        { color: '#2a5a8f', label: '24h+' }
+      ];
+
+      legendColors.forEach((item, i) => {
+        const lx = -0.8 + i * 0.4;
+        const legendBox = document.createElement('a-box');
+        legendBox.setAttribute('width', '0.12');
+        legendBox.setAttribute('height', '0.12');
+        legendBox.setAttribute('depth', '0.04');
+        legendBox.setAttribute('position', `${lx} ${legendY} 0.02`);
+        legendBox.setAttribute('material', {
+          color: item.color,
+          emissive: item.color,
+          emissiveIntensity: 0.3
+        });
+        container.appendChild(legendBox);
+
+        const legendLabel = document.createElement('a-text');
+        legendLabel.setAttribute('value', item.label);
+        legendLabel.setAttribute('position', `${lx} ${legendY - 0.15} 0.01`);
+        legendLabel.setAttribute('align', 'center');
+        legendLabel.setAttribute('color', '#666666');
+        legendLabel.setAttribute('scale', '0.12 0.12 1');
+        container.appendChild(legendLabel);
+      });
+    }
+
+    // Generate Rankings - Enhanced leaderboard
+    function generateVRRankings() {
+      const container = document.getElementById('vr-rankings');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const sorted = [...weeklyData]
+        .filter(w => w.total > 0)
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5);
+
+      // Panel backing
+      const panel = document.createElement('a-box');
+      panel.setAttribute('width', '1.8');
+      panel.setAttribute('height', '2.4');
+      panel.setAttribute('depth', '0.05');
+      panel.setAttribute('position', '0 0.8 -0.05');
+      panel.setAttribute('material', {
+        color: '#050608',
+        transparent: true,
+        opacity: 0.85
+      });
+      container.appendChild(panel);
+
+      // Border frame
+      const borderTop = document.createElement('a-box');
+      borderTop.setAttribute('width', '1.85');
+      borderTop.setAttribute('height', '0.02');
+      borderTop.setAttribute('depth', '0.01');
+      borderTop.setAttribute('position', '0 2.0 0');
+      borderTop.setAttribute('material', { color: '#4a9cae', emissive: '#4a9cae', emissiveIntensity: 0.6 });
+      container.appendChild(borderTop);
+
+      const borderBottom = document.createElement('a-box');
+      borderBottom.setAttribute('width', '1.85');
+      borderBottom.setAttribute('height', '0.02');
+      borderBottom.setAttribute('depth', '0.01');
+      borderBottom.setAttribute('position', '0 -0.4 0');
+      borderBottom.setAttribute('material', { color: '#4a9cae', emissive: '#4a9cae', emissiveIntensity: 0.6 });
+      container.appendChild(borderBottom);
+
+      // Title with glow
+      const title = document.createElement('a-text');
+      title.setAttribute('value', 'TOP WEEKS');
+      title.setAttribute('position', '0 1.75 0.01');
+      title.setAttribute('align', 'center');
+      title.setAttribute('color', '#4a9cae');
+      title.setAttribute('scale', '0.55 0.55 1');
+      container.appendChild(title);
+
+      // Trophy icon area
+      const trophyGlow = document.createElement('a-sphere');
+      trophyGlow.setAttribute('radius', '0.15');
+      trophyGlow.setAttribute('position', '0 1.45 0.02');
+      trophyGlow.setAttribute('material', {
+        color: '#ffd700',
+        emissive: '#ffd700',
+        emissiveIntensity: 0.6,
+        transparent: true,
+        opacity: 0.4
+      });
+      trophyGlow.setAttribute('animation', {
+        property: 'material.emissiveIntensity',
+        from: '0.4',
+        to: '0.9',
+        dur: 1500,
+        dir: 'alternate',
+        loop: true
+      });
+      container.appendChild(trophyGlow);
+
+      sorted.forEach((week, i) => {
+        const y = 1.15 - i * 0.38;
+        const medalColors = ['#ffd700', '#c0c0c0', '#cd7f32', '#4a9cae', '#4a9cae'];
+        const isTop3 = i < 3;
+
+        // Row highlight for top 3
+        if (isTop3) {
+          const rowBg = document.createElement('a-plane');
+          rowBg.setAttribute('width', '1.7');
+          rowBg.setAttribute('height', '0.32');
+          rowBg.setAttribute('position', `0 ${y} 0.005`);
+          rowBg.setAttribute('material', {
+            color: medalColors[i],
+            emissive: medalColors[i],
+            emissiveIntensity: 0.1,
+            transparent: true,
+            opacity: 0.08
+          });
+          container.appendChild(rowBg);
+        }
+
+        // Medal sphere
+        const medal = document.createElement('a-sphere');
+        medal.setAttribute('radius', isTop3 ? '0.1' : '0.07');
+        medal.setAttribute('position', `-0.7 ${y} 0.03`);
+        medal.setAttribute('material', {
+          color: medalColors[i],
+          emissive: medalColors[i],
+          emissiveIntensity: isTop3 ? 0.7 : 0.3,
+          metalness: 0.9,
+          roughness: 0.1
+        });
+        if (i === 0) {
+          medal.setAttribute('animation', {
+            property: 'material.emissiveIntensity',
+            from: '0.5',
+            to: '1',
+            dur: 1200,
+            dir: 'alternate',
+            loop: true
+          });
+        }
+        container.appendChild(medal);
+
+        // Rank number
+        const rank = document.createElement('a-text');
+        rank.setAttribute('value', `#${i + 1}`);
+        rank.setAttribute('position', `-0.5 ${y} 0.01`);
+        rank.setAttribute('align', 'left');
+        rank.setAttribute('color', medalColors[i]);
+        rank.setAttribute('scale', '0.38 0.38 1');
+        container.appendChild(rank);
+
+        // Week info
+        const info = document.createElement('a-text');
+        info.setAttribute('value', `Week ${week.week}`);
+        info.setAttribute('position', `-0.15 ${y} 0.01`);
+        info.setAttribute('align', 'left');
+        info.setAttribute('color', '#aaaaaa');
+        info.setAttribute('scale', '0.32 0.32 1');
+        container.appendChild(info);
+
+        // Hours - prominent
+        const hours = document.createElement('a-text');
+        hours.setAttribute('value', `${Math.round(week.total)}h`);
+        hours.setAttribute('position', `0.75 ${y} 0.01`);
+        hours.setAttribute('align', 'right');
+        hours.setAttribute('color', isTop3 ? '#ffffff' : '#bbbbbb');
+        hours.setAttribute('scale', '0.4 0.4 1');
+        container.appendChild(hours);
+      });
+    }
+
+    // Generate Progress Arc - simple progress bar above logo
+    function generateVRProgressArc() {
+      const container = document.getElementById('progress-arc');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const stats = getStats();
+      const totalHours = stats.totalHours;
+      const goal = 3000;
+      const progress = Math.min(totalHours / goal, 1);
+
+      // Background bar
+      const bgBar = document.createElement('a-box');
+      bgBar.setAttribute('width', '4');
+      bgBar.setAttribute('height', '0.15');
+      bgBar.setAttribute('depth', '0.05');
+      bgBar.setAttribute('position', '0 0 0');
+      bgBar.setAttribute('material', {
+        color: '#0a0c10',
+        transparent: true,
+        opacity: 0.8
+      });
+      container.appendChild(bgBar);
+
+      // Progress fill
+      const fillWidth = 3.9 * progress;
+      const fillBar = document.createElement('a-box');
+      fillBar.setAttribute('width', fillWidth);
+      fillBar.setAttribute('height', '0.12');
+      fillBar.setAttribute('depth', '0.06');
+      fillBar.setAttribute('position', `${-1.95 + fillWidth / 2} 0 0.01`);
+      fillBar.setAttribute('material', {
+        color: '#22c55e',
+        emissive: '#22c55e',
+        emissiveIntensity: 0.5
+      });
+      fillBar.setAttribute('animation', {
+        property: 'material.emissiveIntensity',
+        from: '0.3',
+        to: '0.7',
+        dur: 1500,
+        dir: 'alternate',
+        loop: true
+      });
+      container.appendChild(fillBar);
+
+      // Progress text
+      const progressText = document.createElement('a-text');
+      progressText.setAttribute('value', `${Math.round(totalHours)}h / ${goal}h`);
+      progressText.setAttribute('position', '0 0.25 0.01');
+      progressText.setAttribute('align', 'center');
+      progressText.setAttribute('color', '#ffffff');
+      progressText.setAttribute('scale', '0.35 0.35 1');
+      container.appendChild(progressText);
+
+      // Percentage
+      const pctText = document.createElement('a-text');
+      pctText.setAttribute('value', `${Math.round(progress * 100)}% PROGRESS`);
+      pctText.setAttribute('position', '0 -0.25 0.01');
+      pctText.setAttribute('align', 'center');
+      pctText.setAttribute('color', '#4a9cae');
+      pctText.setAttribute('scale', '0.25 0.25 1');
+      container.appendChild(pctText);
+    }
+
+    // Generate Daily Hours Distribution Chart
+    function generateVRDailyDistribution() {
+      const container = document.getElementById('vr-daily-distribution');
+      if (!container) return;
+      container.innerHTML = '';
+
+      // Collect all daily hours
+      const dailyHours = [];
+      weeklyData.forEach(week => {
+        if (week.dayData) {
+          week.dayData.forEach(day => {
+            if (day.hours > 0) dailyHours.push(day.hours);
+          });
+        }
+      });
+
+      // Create histogram buckets
+      const buckets = [
+        { min: 0, max: 12, count: 0, label: '<12h' },
+        { min: 12, max: 14, count: 0, label: '12-14h' },
+        { min: 14, max: 16, count: 0, label: '14-16h' },
+        { min: 16, max: 18, count: 0, label: '16-18h' },
+        { min: 18, max: 20, count: 0, label: '18-20h' },
+        { min: 20, max: 99, count: 0, label: '20h+' }
+      ];
+
+      dailyHours.forEach(h => {
+        for (const bucket of buckets) {
+          if (h >= bucket.min && h < bucket.max) {
+            bucket.count++;
+            break;
+          }
+        }
+      });
+
+      const maxCount = Math.max(...buckets.map(b => b.count), 1);
+
+      // Panel background
+      const panel = document.createElement('a-box');
+      panel.setAttribute('width', '2.2');
+      panel.setAttribute('height', '2');
+      panel.setAttribute('depth', '0.05');
+      panel.setAttribute('position', '0 1 -0.05');
+      panel.setAttribute('material', { color: '#050608', transparent: true, opacity: 0.85 });
+      container.appendChild(panel);
+
+      // Title
+      const title = document.createElement('a-text');
+      title.setAttribute('value', 'DAILY HOURS');
+      title.setAttribute('position', '0 2.05 0');
+      title.setAttribute('align', 'center');
+      title.setAttribute('color', '#4a9cae');
+      title.setAttribute('scale', '0.4 0.4 1');
+      container.appendChild(title);
+
+      const subtitle = document.createElement('a-text');
+      subtitle.setAttribute('value', 'DISTRIBUTION');
+      subtitle.setAttribute('position', '0 1.85 0');
+      subtitle.setAttribute('align', 'center');
+      subtitle.setAttribute('color', '#666666');
+      subtitle.setAttribute('scale', '0.25 0.25 1');
+      container.appendChild(subtitle);
+
+      // Draw bars
+      const barWidth = 0.28;
+      const gap = 0.08;
+      const startX = -((buckets.length - 1) * (barWidth + gap)) / 2;
+      const maxHeight = 1.2;
+
+      buckets.forEach((bucket, i) => {
+        const x = startX + i * (barWidth + gap);
+        const height = (bucket.count / maxCount) * maxHeight + 0.05;
+        const baseY = 0.4;
+
+        // Bar
+        const bar = document.createElement('a-box');
+        bar.setAttribute('width', barWidth);
+        bar.setAttribute('height', height);
+        bar.setAttribute('depth', '0.08');
+        bar.setAttribute('position', `${x} ${baseY + height / 2} 0`);
+        bar.setAttribute('material', {
+          color: '#4a9cae',
+          emissive: '#4a9cae',
+          emissiveIntensity: 0.3
+        });
+        container.appendChild(bar);
+
+        // Count label
+        const countLabel = document.createElement('a-text');
+        countLabel.setAttribute('value', bucket.count.toString());
+        countLabel.setAttribute('position', `${x} ${baseY + height + 0.12} 0.01`);
+        countLabel.setAttribute('align', 'center');
+        countLabel.setAttribute('color', '#ffffff');
+        countLabel.setAttribute('scale', '0.2 0.2 1');
+        container.appendChild(countLabel);
+
+        // Bucket label
+        const bucketLabel = document.createElement('a-text');
+        bucketLabel.setAttribute('value', bucket.label);
+        bucketLabel.setAttribute('position', `${x} ${baseY - 0.15} 0.01`);
+        bucketLabel.setAttribute('align', 'center');
+        bucketLabel.setAttribute('color', '#888888');
+        bucketLabel.setAttribute('scale', '0.15 0.15 1');
+        container.appendChild(bucketLabel);
+      });
+    }
+
+    // Generate Weekly Hours Distribution Chart
+    function generateVRWeeklyDistribution() {
+      const container = document.getElementById('vr-weekly-distribution');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const weeks = weeklyData.filter(w => w.total > 0);
+
+      // Create histogram buckets
+      const buckets = [
+        { min: 0, max: 80, count: 0, label: '<80h' },
+        { min: 80, max: 90, count: 0, label: '80-90h' },
+        { min: 90, max: 100, count: 0, label: '90-100h' },
+        { min: 100, max: 110, count: 0, label: '100-110h' },
+        { min: 110, max: 120, count: 0, label: '110-120h' },
+        { min: 120, max: 999, count: 0, label: '120h+' }
+      ];
+
+      weeks.forEach(w => {
+        for (const bucket of buckets) {
+          if (w.total >= bucket.min && w.total < bucket.max) {
+            bucket.count++;
+            break;
+          }
+        }
+      });
+
+      const maxCount = Math.max(...buckets.map(b => b.count), 1);
+
+      // Panel background
+      const panel = document.createElement('a-box');
+      panel.setAttribute('width', '2.2');
+      panel.setAttribute('height', '2');
+      panel.setAttribute('depth', '0.05');
+      panel.setAttribute('position', '0 1 -0.05');
+      panel.setAttribute('material', { color: '#050608', transparent: true, opacity: 0.85 });
+      container.appendChild(panel);
+
+      // Title
+      const title = document.createElement('a-text');
+      title.setAttribute('value', 'WEEKLY HOURS');
+      title.setAttribute('position', '0 2.05 0');
+      title.setAttribute('align', 'center');
+      title.setAttribute('color', '#22c55e');
+      title.setAttribute('scale', '0.4 0.4 1');
+      container.appendChild(title);
+
+      const subtitle = document.createElement('a-text');
+      subtitle.setAttribute('value', 'DISTRIBUTION');
+      subtitle.setAttribute('position', '0 1.85 0');
+      subtitle.setAttribute('align', 'center');
+      subtitle.setAttribute('color', '#666666');
+      subtitle.setAttribute('scale', '0.25 0.25 1');
+      container.appendChild(subtitle);
+
+      // Draw bars
+      const barWidth = 0.28;
+      const gap = 0.08;
+      const startX = -((buckets.length - 1) * (barWidth + gap)) / 2;
+      const maxHeight = 1.2;
+
+      buckets.forEach((bucket, i) => {
+        const x = startX + i * (barWidth + gap);
+        const height = (bucket.count / maxCount) * maxHeight + 0.05;
+        const baseY = 0.4;
+
+        // Bar
+        const bar = document.createElement('a-box');
+        bar.setAttribute('width', barWidth);
+        bar.setAttribute('height', height);
+        bar.setAttribute('depth', '0.08');
+        bar.setAttribute('position', `${x} ${baseY + height / 2} 0`);
+        bar.setAttribute('material', {
+          color: '#22c55e',
+          emissive: '#22c55e',
+          emissiveIntensity: 0.3
+        });
+        container.appendChild(bar);
+
+        // Count label
+        const countLabel = document.createElement('a-text');
+        countLabel.setAttribute('value', bucket.count.toString());
+        countLabel.setAttribute('position', `${x} ${baseY + height + 0.12} 0.01`);
+        countLabel.setAttribute('align', 'center');
+        countLabel.setAttribute('color', '#ffffff');
+        countLabel.setAttribute('scale', '0.2 0.2 1');
+        container.appendChild(countLabel);
+
+        // Bucket label
+        const bucketLabel = document.createElement('a-text');
+        bucketLabel.setAttribute('value', bucket.label);
+        bucketLabel.setAttribute('position', `${x} ${baseY - 0.15} 0.01`);
+        bucketLabel.setAttribute('align', 'center');
+        bucketLabel.setAttribute('color', '#888888');
+        bucketLabel.setAttribute('scale', '0.15 0.15 1');
+        container.appendChild(bucketLabel);
+      });
+    }
+
+    // Generate Trend Chart - cumulative hours over time
+    function generateVRTrendChart() {
+      const container = document.getElementById('vr-trend-chart');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const weeks = weeklyData.filter(w => w.total > 0);
+      if (weeks.length === 0) return;
+
+      // Panel background
+      const panel = document.createElement('a-box');
+      panel.setAttribute('width', '2.5');
+      panel.setAttribute('height', '2');
+      panel.setAttribute('depth', '0.05');
+      panel.setAttribute('position', '0 1 -0.05');
+      panel.setAttribute('material', { color: '#050608', transparent: true, opacity: 0.85 });
+      container.appendChild(panel);
+
+      // Title
+      const title = document.createElement('a-text');
+      title.setAttribute('value', 'CUMULATIVE HOURS');
+      title.setAttribute('position', '0 2.05 0');
+      title.setAttribute('align', 'center');
+      title.setAttribute('color', '#ffd700');
+      title.setAttribute('scale', '0.4 0.4 1');
+      container.appendChild(title);
+
+      // Calculate cumulative
+      let cumulative = 0;
+      const points = weeks.map(w => {
+        cumulative += w.total;
+        return { week: w.week, total: cumulative };
+      });
+
+      const maxCumulative = points[points.length - 1].total;
+      const chartWidth = 2.2;
+      const chartHeight = 1.3;
+      const startX = -chartWidth / 2;
+      const baseY = 0.35;
+
+      // Draw line segments
+      for (let i = 1; i < points.length; i++) {
+        const x1 = startX + ((i - 1) / (points.length - 1)) * chartWidth;
+        const y1 = baseY + (points[i - 1].total / maxCumulative) * chartHeight;
+        const x2 = startX + (i / (points.length - 1)) * chartWidth;
+        const y2 = baseY + (points[i].total / maxCumulative) * chartHeight;
+
+        // Calculate line position and rotation
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+        const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+
+        const line = document.createElement('a-box');
+        line.setAttribute('width', length);
+        line.setAttribute('height', '0.03');
+        line.setAttribute('depth', '0.02');
+        line.setAttribute('position', `${midX} ${midY} 0`);
+        line.setAttribute('rotation', `0 0 ${angle}`);
+        line.setAttribute('material', {
+          color: '#ffd700',
+          emissive: '#ffd700',
+          emissiveIntensity: 0.5
+        });
+        container.appendChild(line);
+      }
+
+      // Data points at key milestones
+      [0, Math.floor(points.length / 2), points.length - 1].forEach(idx => {
+        if (idx >= points.length) return;
+        const x = startX + (idx / (points.length - 1)) * chartWidth;
+        const y = baseY + (points[idx].total / maxCumulative) * chartHeight;
+
+        const dot = document.createElement('a-sphere');
+        dot.setAttribute('radius', '0.05');
+        dot.setAttribute('position', `${x} ${y} 0.02`);
+        dot.setAttribute('material', {
+          color: '#ffd700',
+          emissive: '#ffd700',
+          emissiveIntensity: 0.8
+        });
+        container.appendChild(dot);
+
+        const label = document.createElement('a-text');
+        label.setAttribute('value', `${Math.round(points[idx].total)}h`);
+        label.setAttribute('position', `${x} ${y + 0.15} 0.02`);
+        label.setAttribute('align', 'center');
+        label.setAttribute('color', '#ffffff');
+        label.setAttribute('scale', '0.18 0.18 1');
+        container.appendChild(label);
+      });
+
+      // X-axis labels
+      const xLabel = document.createElement('a-text');
+      xLabel.setAttribute('value', `Week 1 → Week ${weeks.length}`);
+      xLabel.setAttribute('position', '0 0.15 0.01');
+      xLabel.setAttribute('align', 'center');
+      xLabel.setAttribute('color', '#666666');
+      xLabel.setAttribute('scale', '0.18 0.18 1');
+      container.appendChild(xLabel);
+    }
+
+    // Generate Monthly Overview - hours per month
+    function generateVRMonthlyOverview() {
+      const container = document.getElementById('vr-monthly-overview');
+      if (!container) return;
+      container.innerHTML = '';
+
+      // Aggregate by month
+      const monthlyTotals = {};
+      weeklyData.forEach(week => {
+        if (week.mondayDate && week.total > 0) {
+          const date = new Date(week.mondayDate);
+          const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          monthlyTotals[key] = (monthlyTotals[key] || 0) + week.total;
+        }
+      });
+
+      const months = Object.entries(monthlyTotals).sort((a, b) => a[0].localeCompare(b[0]));
+      if (months.length === 0) return;
+
+      const maxHours = Math.max(...months.map(m => m[1]));
+
+      // Panel background
+      const panel = document.createElement('a-box');
+      panel.setAttribute('width', '2.5');
+      panel.setAttribute('height', '2');
+      panel.setAttribute('depth', '0.05');
+      panel.setAttribute('position', '0 1 -0.05');
+      panel.setAttribute('material', { color: '#050608', transparent: true, opacity: 0.85 });
+      container.appendChild(panel);
+
+      // Title
+      const title = document.createElement('a-text');
+      title.setAttribute('value', 'MONTHLY TOTALS');
+      title.setAttribute('position', '0 2.05 0');
+      title.setAttribute('align', 'center');
+      title.setAttribute('color', '#4a9cae');
+      title.setAttribute('scale', '0.4 0.4 1');
+      container.appendChild(title);
+
+      // Draw bars
+      const barWidth = 0.25;
+      const gap = 0.06;
+      const totalWidth = months.length * (barWidth + gap) - gap;
+      const startX = -totalWidth / 2 + barWidth / 2;
+      const maxHeight = 1.2;
+      const baseY = 0.4;
+
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      months.forEach(([key, hours], i) => {
+        const x = startX + i * (barWidth + gap);
+        const height = (hours / maxHours) * maxHeight + 0.05;
+        const monthIdx = parseInt(key.split('-')[1]) - 1;
+
+        // Bar
+        const bar = document.createElement('a-box');
+        bar.setAttribute('width', barWidth);
+        bar.setAttribute('height', height);
+        bar.setAttribute('depth', '0.08');
+        bar.setAttribute('position', `${x} ${baseY + height / 2} 0`);
+        bar.setAttribute('material', {
+          color: hours >= 400 ? '#22c55e' : '#4a9cae',
+          emissive: hours >= 400 ? '#22c55e' : '#4a9cae',
+          emissiveIntensity: 0.3
+        });
+        container.appendChild(bar);
+
+        // Hours label
+        const hoursLabel = document.createElement('a-text');
+        hoursLabel.setAttribute('value', Math.round(hours).toString());
+        hoursLabel.setAttribute('position', `${x} ${baseY + height + 0.1} 0.01`);
+        hoursLabel.setAttribute('align', 'center');
+        hoursLabel.setAttribute('color', '#ffffff');
+        hoursLabel.setAttribute('scale', '0.16 0.16 1');
+        container.appendChild(hoursLabel);
+
+        // Month label
+        const monthLabel = document.createElement('a-text');
+        monthLabel.setAttribute('value', monthNames[monthIdx]);
+        monthLabel.setAttribute('position', `${x} ${baseY - 0.12} 0.01`);
+        monthLabel.setAttribute('align', 'center');
+        monthLabel.setAttribute('color', '#888888');
+        monthLabel.setAttribute('scale', '0.14 0.14 1');
+        container.appendChild(monthLabel);
+      });
+    }
+
+    // Generate Day of Week Breakdown
+    function generateVRDayOfWeek() {
+      const container = document.getElementById('vr-dayofweek');
+      if (!container) return;
+      container.innerHTML = '';
+
+      // Aggregate by day of week
+      const dayTotals = [0, 0, 0, 0, 0, 0, 0]; // Mon-Sun
+      const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+
+      weeklyData.forEach(week => {
+        if (week.dayData) {
+          week.dayData.forEach((day, i) => {
+            if (day.hours > 0) {
+              dayTotals[i] += day.hours;
+              dayCounts[i]++;
+            }
+          });
+        }
+      });
+
+      const dayAvgs = dayTotals.map((total, i) => dayCounts[i] > 0 ? total / dayCounts[i] : 0);
+      const maxAvg = Math.max(...dayAvgs);
+
+      // Panel background
+      const panel = document.createElement('a-box');
+      panel.setAttribute('width', '2.4');
+      panel.setAttribute('height', '1.8');
+      panel.setAttribute('depth', '0.05');
+      panel.setAttribute('position', '0 0.9 -0.05');
+      panel.setAttribute('material', { color: '#050608', transparent: true, opacity: 0.85 });
+      container.appendChild(panel);
+
+      // Title
+      const title = document.createElement('a-text');
+      title.setAttribute('value', 'AVG BY DAY OF WEEK');
+      title.setAttribute('position', '0 1.85 0');
+      title.setAttribute('align', 'center');
+      title.setAttribute('color', '#4a9cae');
+      title.setAttribute('scale', '0.35 0.35 1');
+      container.appendChild(title);
+
+      const dayNames = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+      const barWidth = 0.28;
+      const gap = 0.06;
+      const startX = -((dayNames.length - 1) * (barWidth + gap)) / 2;
+      const maxHeight = 1.0;
+      const baseY = 0.3;
+
+      dayAvgs.forEach((avg, i) => {
+        const x = startX + i * (barWidth + gap);
+        const height = (avg / maxAvg) * maxHeight + 0.05;
+        const isWeekend = i >= 5;
+
+        // Bar
+        const bar = document.createElement('a-box');
+        bar.setAttribute('width', barWidth);
+        bar.setAttribute('height', height);
+        bar.setAttribute('depth', '0.08');
+        bar.setAttribute('position', `${x} ${baseY + height / 2} 0`);
+        bar.setAttribute('material', {
+          color: isWeekend ? '#22c55e' : '#4a9cae',
+          emissive: isWeekend ? '#22c55e' : '#4a9cae',
+          emissiveIntensity: 0.3
+        });
+        container.appendChild(bar);
+
+        // Hours label
+        const hoursLabel = document.createElement('a-text');
+        hoursLabel.setAttribute('value', avg.toFixed(1));
+        hoursLabel.setAttribute('position', `${x} ${baseY + height + 0.1} 0.01`);
+        hoursLabel.setAttribute('align', 'center');
+        hoursLabel.setAttribute('color', '#ffffff');
+        hoursLabel.setAttribute('scale', '0.18 0.18 1');
+        container.appendChild(hoursLabel);
+
+        // Day label
+        const dayLabel = document.createElement('a-text');
+        dayLabel.setAttribute('value', dayNames[i]);
+        dayLabel.setAttribute('position', `${x} ${baseY - 0.12} 0.01`);
+        dayLabel.setAttribute('align', 'center');
+        dayLabel.setAttribute('color', isWeekend ? '#22c55e' : '#888888');
+        dayLabel.setAttribute('scale', '0.14 0.14 1');
+        container.appendChild(dayLabel);
+      });
+    }
+
+    // Generate Bottom 5 Weeks
+    function generateVRBottomWeeks() {
+      const container = document.getElementById('vr-bottom-weeks');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const sorted = [...weeklyData]
+        .filter(w => w.total > 0)
+        .sort((a, b) => a.total - b.total)
+        .slice(0, 5);
+
+      // Panel background
+      const panel = document.createElement('a-box');
+      panel.setAttribute('width', '1.8');
+      panel.setAttribute('height', '2.4');
+      panel.setAttribute('depth', '0.05');
+      panel.setAttribute('position', '0 0.8 -0.05');
+      panel.setAttribute('material', { color: '#050608', transparent: true, opacity: 0.85 });
+      container.appendChild(panel);
+
+      // Title
+      const title = document.createElement('a-text');
+      title.setAttribute('value', 'LOWEST WEEKS');
+      title.setAttribute('position', '0 1.75 0.01');
+      title.setAttribute('align', 'center');
+      title.setAttribute('color', '#ff6b6b');
+      title.setAttribute('scale', '0.45 0.45 1');
+      container.appendChild(title);
+
+      sorted.forEach((week, i) => {
+        const y = 1.35 - i * 0.35;
+
+        // Rank
+        const rank = document.createElement('a-text');
+        rank.setAttribute('value', `#${i + 1}`);
+        rank.setAttribute('position', `-0.7 ${y} 0.01`);
+        rank.setAttribute('align', 'left');
+        rank.setAttribute('color', '#ff6b6b');
+        rank.setAttribute('scale', '0.32 0.32 1');
+        container.appendChild(rank);
+
+        // Week info
+        const info = document.createElement('a-text');
+        info.setAttribute('value', `Week ${week.week}`);
+        info.setAttribute('position', `-0.35 ${y} 0.01`);
+        info.setAttribute('align', 'left');
+        info.setAttribute('color', '#aaaaaa');
+        info.setAttribute('scale', '0.28 0.28 1');
+        container.appendChild(info);
+
+        // Hours
+        const hours = document.createElement('a-text');
+        hours.setAttribute('value', `${Math.round(week.total)}h`);
+        hours.setAttribute('position', `0.7 ${y} 0.01`);
+        hours.setAttribute('align', 'right');
+        hours.setAttribute('color', '#ffffff');
+        hours.setAttribute('scale', '0.35 0.35 1');
+        container.appendChild(hours);
+      });
+    }
+
   </script>
+
+  <!-- VR Loading Screen -->
+  <div class="vr-loading" id="vrLoading">
+    <svg class="hero-logo" style="width: 200px; opacity: 0.8;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 160">
+      <rect x="0" y="0" width="400" height="160" rx="12" fill="#020304"/>
+      <rect x="3" y="3" width="394" height="154" rx="9" fill="#0c0e12"/>
+      <text x="105" y="118" font-family="Arial Black, Arial, sans-serif" font-size="120" font-weight="700" text-anchor="middle" fill="#101012">D</text>
+      <text x="200" y="118" font-family="Arial Black, Arial, sans-serif" font-size="120" font-weight="700" text-anchor="middle" fill="#2a5a8f">8</text>
+      <text x="295" y="118" font-family="Arial Black, Arial, sans-serif" font-size="120" font-weight="700" text-anchor="middle" fill="#101012">F</text>
+    </svg>
+    <div class="vr-loading-text">Entering The Nexus...</div>
+  </div>
+
+  <!-- VR Exit Button -->
+  <button class="vr-exit-btn" id="vrExitBtn" onclick="exitVRMode()">Exit VR</button>
+
+  <!-- A-Frame VR Scene -->
+  <a-scene id="vrScene" class="hidden"
+           vr-mode-ui="enabled: true"
+           embedded
+           renderer="antialias: true; alpha: false"
+           background="color: #030508">
+
+    <!-- Sky - must be first -->
+    <a-sky color="#020408"></a-sky>
+
+    <!-- Stars - Dense starfield -->
+    <a-entity id="stars">
+      <!-- Bright stars -->
+      <a-sphere position="-15 8 -20" radius="0.06" material="color: #fff; emissive: #fff; emissiveIntensity: 1.2"></a-sphere>
+      <a-sphere position="12 12 -25" radius="0.05" material="color: #fff; emissive: #fff; emissiveIntensity: 1"></a-sphere>
+      <a-sphere position="-8 15 -18" radius="0.08" material="color: #aaddff; emissive: #aaddff; emissiveIntensity: 1.3" animation="property: material.emissiveIntensity; from: 0.8; to: 1.3; dur: 2000; dir: alternate; loop: true"></a-sphere>
+      <a-sphere position="20 6 -30" radius="0.05" material="color: #fff; emissive: #fff; emissiveIntensity: 1"></a-sphere>
+      <a-sphere position="-25 10 -22" radius="0.04" material="color: #fff; emissive: #fff; emissiveIntensity: 1"></a-sphere>
+      <a-sphere position="8 18 -28" radius="0.09" material="color: #ffeedd; emissive: #ffeedd; emissiveIntensity: 1.2" animation="property: material.emissiveIntensity; from: 0.9; to: 1.4; dur: 2500; dir: alternate; loop: true"></a-sphere>
+      <a-sphere position="-18 5 -35" radius="0.05" material="color: #fff; emissive: #fff; emissiveIntensity: 1"></a-sphere>
+      <a-sphere position="15 14 -20" radius="0.04" material="color: #aaffdd; emissive: #aaffdd; emissiveIntensity: 1"></a-sphere>
+      <a-sphere position="-5 20 -25" radius="0.07" material="color: #fff; emissive: #fff; emissiveIntensity: 1"></a-sphere>
+      <a-sphere position="25 8 -32" radius="0.05" material="color: #fff; emissive: #fff; emissiveIntensity: 1"></a-sphere>
+      <a-sphere position="-22 16 -28" radius="0.06" material="color: #ddaaff; emissive: #ddaaff; emissiveIntensity: 1.1"></a-sphere>
+      <a-sphere position="18 20 -35" radius="0.06" material="color: #fff; emissive: #fff; emissiveIntensity: 1"></a-sphere>
+      <a-sphere position="-30 12 -40" radius="0.1" material="color: #aaddff; emissive: #aaddff; emissiveIntensity: 1.3" animation="property: material.emissiveIntensity; from: 1; to: 1.5; dur: 3000; dir: alternate; loop: true"></a-sphere>
+      <a-sphere position="30 15 -38" radius="0.05" material="color: #fff; emissive: #fff; emissiveIntensity: 1"></a-sphere>
+      <a-sphere position="0 25 -30" radius="0.08" material="color: #fff; emissive: #fff; emissiveIntensity: 1"></a-sphere>
+      <!-- Additional star layers -->
+      <a-sphere position="-35 18 -50" radius="0.04" material="color: #fff; emissive: #fff; emissiveIntensity: 0.8"></a-sphere>
+      <a-sphere position="35 22 -48" radius="0.05" material="color: #fff; emissive: #fff; emissiveIntensity: 0.9"></a-sphere>
+      <a-sphere position="-12 28 -42" radius="0.06" material="color: #ccddff; emissive: #ccddff; emissiveIntensity: 1"></a-sphere>
+      <a-sphere position="22 5 -45" radius="0.04" material="color: #fff; emissive: #fff; emissiveIntensity: 0.8"></a-sphere>
+      <a-sphere position="-28 8 -55" radius="0.05" material="color: #fff; emissive: #fff; emissiveIntensity: 0.7"></a-sphere>
+      <a-sphere position="10 30 -50" radius="0.07" material="color: #ffeeff; emissive: #ffeeff; emissiveIntensity: 1"></a-sphere>
+      <a-sphere position="-40 15 -60" radius="0.06" material="color: #fff; emissive: #fff; emissiveIntensity: 0.6"></a-sphere>
+      <a-sphere position="40 12 -55" radius="0.05" material="color: #aaccff; emissive: #aaccff; emissiveIntensity: 0.8"></a-sphere>
+      <a-sphere position="5 35 -45" radius="0.04" material="color: #fff; emissive: #fff; emissiveIntensity: 0.9"></a-sphere>
+      <a-sphere position="-15 25 -38" radius="0.05" material="color: #fff; emissive: #fff; emissiveIntensity: 0.9"></a-sphere>
+      <!-- Dim distant stars -->
+      <a-sphere position="-50 20 -70" radius="0.03" material="color: #888; emissive: #888; emissiveIntensity: 0.5"></a-sphere>
+      <a-sphere position="45 25 -65" radius="0.03" material="color: #888; emissive: #888; emissiveIntensity: 0.5"></a-sphere>
+      <a-sphere position="-20 40 -60" radius="0.04" material="color: #888; emissive: #888; emissiveIntensity: 0.5"></a-sphere>
+      <a-sphere position="30 35 -58" radius="0.03" material="color: #888; emissive: #888; emissiveIntensity: 0.5"></a-sphere>
+      <a-sphere position="-45 10 -65" radius="0.04" material="color: #888; emissive: #888; emissiveIntensity: 0.4"></a-sphere>
+      <a-sphere position="50 18 -70" radius="0.03" material="color: #888; emissive: #888; emissiveIntensity: 0.4"></a-sphere>
+      <!-- Side stars -->
+      <a-sphere position="-40 8 -15" radius="0.05" material="color: #fff; emissive: #fff; emissiveIntensity: 0.8"></a-sphere>
+      <a-sphere position="42 12 -18" radius="0.04" material="color: #fff; emissive: #fff; emissiveIntensity: 0.8"></a-sphere>
+      <a-sphere position="-38 20 -10" radius="0.05" material="color: #aaddff; emissive: #aaddff; emissiveIntensity: 0.9"></a-sphere>
+      <a-sphere position="45 15 -12" radius="0.04" material="color: #fff; emissive: #fff; emissiveIntensity: 0.7"></a-sphere>
+    </a-entity>
+
+    <!-- Nebula effect - layered cosmic clouds -->
+    <a-sphere position="-20 5 -40" radius="18" material="color: #1e3a5f; emissive: #1e3a5f; emissiveIntensity: 0.1; transparent: true; opacity: 0.04; side: back"></a-sphere>
+    <a-sphere position="25 10 -45" radius="22" material="color: #2a5a8f; emissive: #2a5a8f; emissiveIntensity: 0.08; transparent: true; opacity: 0.03; side: back"></a-sphere>
+    <a-sphere position="0 15 -55" radius="25" material="color: #143040; emissive: #143040; emissiveIntensity: 0.05; transparent: true; opacity: 0.025; side: back"></a-sphere>
+    <a-sphere position="-35 20 -50" radius="15" material="color: #22c55e; emissive: #22c55e; emissiveIntensity: 0.03; transparent: true; opacity: 0.015; side: back"></a-sphere>
+    <a-sphere position="30 8 -60" radius="20" material="color: #1a2540; emissive: #1a2540; emissiveIntensity: 0.06; transparent: true; opacity: 0.02; side: back"></a-sphere>
+
+    <!-- Distant galaxy hints -->
+    <a-entity position="-35 18 -65">
+      <a-sphere radius="0.15" material="color: #4a9cae; emissive: #4a9cae; emissiveIntensity: 0.8; transparent: true; opacity: 0.3"></a-sphere>
+      <a-torus radius="0.8" radius-tubular="0.03" rotation="45 0 30" material="color: #2a5a8f; emissive: #2a5a8f; emissiveIntensity: 0.3; transparent: true; opacity: 0.15"></a-torus>
+    </a-entity>
+    <a-entity position="40 22 -70">
+      <a-sphere radius="0.12" material="color: #ffd700; emissive: #ffd700; emissiveIntensity: 0.6; transparent: true; opacity: 0.25"></a-sphere>
+      <a-torus radius="0.6" radius-tubular="0.02" rotation="-30 20 10" material="color: #ffaa00; emissive: #ffaa00; emissiveIntensity: 0.2; transparent: true; opacity: 0.1"></a-torus>
+    </a-entity>
+
+    <!-- Lighting - Dramatic multi-point setup -->
+    <a-entity light="type: ambient; color: #1e3a5f; intensity: 0.15"></a-entity>
+    <!-- Main overhead light -->
+    <a-entity light="type: point; color: #ffffff; intensity: 0.8; distance: 30; decay: 2" position="0 10 0"></a-entity>
+    <!-- Accent lights -->
+    <a-entity light="type: point; color: #4a9cae; intensity: 0.5; distance: 15; decay: 2" position="0 5 -8"></a-entity>
+    <a-entity light="type: point; color: #22c55e; intensity: 0.3; distance: 12; decay: 2" position="-8 3 0"></a-entity>
+    <a-entity light="type: point; color: #ffd700; intensity: 0.2; distance: 10; decay: 2" position="8 3 2"></a-entity>
+    <!-- Logo spotlight -->
+    <a-entity light="type: spot; color: #4a9cae; intensity: 1; angle: 30; penumbra: 0.3; distance: 15" position="0 8 3" rotation="-60 0 0"></a-entity>
+    <!-- Floor uplights -->
+    <a-entity light="type: point; color: #1e3a5f; intensity: 0.4; distance: 8; decay: 2" position="0 0.5 0"></a-entity>
+
+    <!-- Floor -->
+    <a-entity floor-grid position="0 0 0"></a-entity>
+    <a-circle radius="10" rotation="-90 0 0" material="color: #0a0c0e; opacity: 0.95; transparent: true"></a-circle>
+
+    <!-- Camera Rig -->
+    <a-entity id="cameraRig" position="0 1.6 0">
+      <a-camera look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 30">
+        <a-cursor color="#4a9cae"
+                  fuse="false"
+                  raycaster="objects: .clickable"
+                  animation__click="property: scale; from: 1 1 1; to: 0.5 0.5 0.5; dur: 100; startEvents: click"
+                  animation__fusing="property: scale; from: 1 1 1; to: 0.7 0.7 0.7; dur: 800; startEvents: fusing"
+                  animation__leave="property: scale; to: 1 1 1; dur: 100; startEvents: mouseleave"></a-cursor>
+      </a-camera>
+    </a-entity>
+
+    <!-- D8F Logo (Center, elevated, behind chart) -->
+    <a-entity id="vr-logo" position="0 3.5 -6"
+              animation="property: rotation; from: 0 0 0; to: 0 360 0; dur: 180000; loop: true; easing: linear">
+    </a-entity>
+
+    <!-- Weekly Bar Chart (Front arc) -->
+    <a-entity id="vr-weekly-chart" position="0 0 0"></a-entity>
+
+    <!-- Stats Ring (Above user, facing down) -->
+    <a-entity id="vr-stats-ring" position="0 0 4.5"></a-entity>
+
+    <!-- Calendar Wall (Left side, angled toward user) -->
+    <a-entity id="vr-calendar-wall" position="-5 0.5 -2" rotation="0 40 0"></a-entity>
+
+    <!-- Daily Distribution (Left wall, further back) -->
+    <a-entity id="vr-daily-distribution" position="-6 0.5 1" rotation="0 60 0"></a-entity>
+
+    <!-- Rankings (Right side, angled toward user) -->
+    <a-entity id="vr-rankings" position="5 0.5 -2" rotation="0 -40 0"></a-entity>
+
+    <!-- Weekly Distribution (Right wall, further back) -->
+    <a-entity id="vr-weekly-distribution" position="6 0.5 1" rotation="0 -60 0"></a-entity>
+
+    <!-- Trend Chart (Back wall, left of stats) -->
+    <a-entity id="vr-trend-chart" position="-3 0.5 3" rotation="0 180 0"></a-entity>
+
+    <!-- Monthly Overview (Back wall, right of stats) -->
+    <a-entity id="vr-monthly-overview" position="3 0.5 3" rotation="0 180 0"></a-entity>
+
+    <!-- Day of Week Breakdown (Back center) -->
+    <a-entity id="vr-dayofweek" position="0 0.5 5" rotation="0 180 0"></a-entity>
+
+    <!-- Bottom 5 Weeks (Far left) -->
+    <a-entity id="vr-bottom-weeks" position="-7 0.5 0" rotation="0 75 0"></a-entity>
+
+    <!-- Decorative elements -->
+    <!-- Central pillar of light under logo -->
+    <a-cylinder position="0 1.75 -6" radius="0.04" height="3.5"
+                material="color: #4a9cae; emissive: #4a9cae; emissiveIntensity: 0.8; transparent: true; opacity: 0.2"
+                animation="property: material.opacity; from: 0.12; to: 0.28; dir: alternate; dur: 2000; loop: true"></a-cylinder>
+
+    <!-- Cumulative Progress Arc - positioned above and behind -->
+    <a-entity id="progress-arc" position="0 5 -7">
+      <!-- Arc is generated dynamically -->
+    </a-entity>
+
+    <!-- Floor waypoint markers -->
+    <a-entity id="floor-markers">
+      <!-- Forward marker -->
+      <a-ring position="0 0.02 -4" rotation="-90 0 0" radius-inner="0.25" radius-outer="0.35"
+              material="color: #4a9cae; emissive: #4a9cae; emissiveIntensity: 0.5; transparent: true; opacity: 0.35"
+              animation="property: scale; from: 1 1 1; to: 1.1 1.1 1; dir: alternate; dur: 2000; loop: true"></a-ring>
+      <!-- Left marker -->
+      <a-ring position="-4 0.02 -1" rotation="-90 0 0" radius-inner="0.2" radius-outer="0.28"
+              material="color: #1e3a5f; emissive: #1e3a5f; emissiveIntensity: 0.4; transparent: true; opacity: 0.3"
+              animation="property: scale; from: 1 1 1; to: 1.08 1.08 1; dir: alternate; dur: 2500; loop: true; delay: 300"></a-ring>
+      <!-- Right marker -->
+      <a-ring position="4 0.02 -1" rotation="-90 0 0" radius-inner="0.2" radius-outer="0.28"
+              material="color: #22c55e; emissive: #22c55e; emissiveIntensity: 0.4; transparent: true; opacity: 0.3"
+              animation="property: scale; from: 1 1 1; to: 1.08 1.08 1; dir: alternate; dur: 2200; loop: true; delay: 600"></a-ring>
+    </a-entity>
+
+    <!-- Title text floating above logo -->
+    <a-entity id="title-display" position="0 5.5 -6">
+      <a-text value="THE NEXUS" position="0 0 0" align="center" color="#4a9cae" scale="1.2 1.2 1" opacity="0.8"></a-text>
+      <a-text value="D8F COMMAND CENTER" position="0 -0.35 0" align="center" color="#555555" scale="0.4 0.4 1"></a-text>
+    </a-entity>
+
+  </a-scene>
 </body>
 </html>

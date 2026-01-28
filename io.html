@@ -1,0 +1,2873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#08090a">
+  <title>D8F</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-page: #08090a;
+      --bg-card: #0f1318;
+      --bg-inset: #141a20;
+      --bg-elevated: #1a1f25;
+
+      --border-subtle: rgba(255, 255, 255, 0.03);
+      --border-light: rgba(255, 255, 255, 0.06);
+      --border-medium: rgba(255, 255, 255, 0.08);
+
+      --accent: #4a9cae;
+      --accent-muted: rgba(74, 156, 174, 0.6);
+      --accent-subtle: rgba(74, 156, 174, 0.15);
+
+      --midnight: #1e3a5f;
+      --midnight-light: #2a4a6f;
+      --petroleum: #1a5c5c;
+      --petroleum-light: #2a7a7a;
+
+      --emerald: #22c55e;
+      --emerald-muted: rgba(34, 197, 94, 0.6);
+      --emerald-subtle: rgba(34, 197, 94, 0.1);
+
+      --text-primary: rgba(255, 255, 255, 0.9);
+      --text-secondary: rgba(255, 255, 255, 0.55);
+      --text-muted: rgba(255, 255, 255, 0.35);
+      --text-dim: rgba(255, 255, 255, 0.2);
+    }
+
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Navigation */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: linear-gradient(180deg, rgba(15, 19, 24, 0.95) 0%, rgba(15, 19, 24, 0.85) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      padding: 0 20px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-brand-text {
+      display: flex;
+      align-items: center;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .nav-char {
+      display: inline-block;
+    }
+
+    .nav-d, .nav-f {
+      color: #2a2d32;
+      -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.15);
+    }
+
+    .nav-8 {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2a5a8f 50%, #1e3a5f 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      animation: navShimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes navShimmer {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.3); }
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-inset);
+      padding: 4px;
+      border-radius: 10px;
+    }
+
+    .nav-tab {
+      padding: 8px 20px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tab:hover {
+      color: var(--text-secondary);
+    }
+
+    .nav-tab.active {
+      background: linear-gradient(180deg, rgba(74, 156, 174, 0.2) 0%, rgba(74, 156, 174, 0.08) 100%);
+      color: var(--accent);
+      box-shadow: 0 0 12px rgba(74, 156, 174, 0.15);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding: 20px 0;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      margin-bottom: 12px;
+    }
+
+    .brand-char {
+      display: inline-block;
+    }
+
+    .brand-d, .brand-f {
+      color: #2a2d32;
+      -webkit-text-stroke: 1px rgba(255, 255, 255, 0.12);
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .brand-8 {
+      background: linear-gradient(
+        135deg,
+        #1a3a5f 0%,
+        #2a5a8f 25%,
+        #3a7abf 50%,
+        #2a5a8f 75%,
+        #1a3a5f 100%
+      );
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 8px rgba(42, 90, 143, 0.4));
+    }
+
+    @keyframes shimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .brand-divider {
+      width: 120px;
+      height: 2px;
+      margin: 0 auto 16px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(30, 58, 95, 0.3) 20%,
+        rgba(42, 90, 143, 0.6) 50%,
+        rgba(30, 58, 95, 0.3) 80%,
+        transparent 100%
+      );
+      border-radius: 1px;
+      position: relative;
+    }
+
+    .brand-divider::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(58, 122, 191, 0.8) 50%,
+        transparent 100%
+      );
+      border-radius: 1px;
+      animation: dividerShimmer 3s ease-in-out infinite;
+      opacity: 0;
+    }
+
+    @keyframes dividerShimmer {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+
+    .header-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    /* Premium Card */
+    .card {
+      position: relative;
+      background: linear-gradient(175deg, #111315 0%, #0b0c0e 40%, #080909 100%);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.04) inset,
+        0 0 0 1px var(--border-subtle),
+        0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      padding: 1px;
+      background: linear-gradient(
+        135deg,
+        rgba(74, 156, 174, 0.15) 0%,
+        transparent 35%,
+        transparent 65%,
+        rgba(26, 92, 92, 0.1) 100%
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .card-subtitle {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--text-dim);
+      margin-left: 8px;
+    }
+
+    .card-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .card-action {
+      padding: 6px 14px;
+      background: var(--bg-inset);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .card-action:hover {
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      border-color: var(--border-medium);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    /* Mobile: 3 on top row, 2 on bottom row centered */
+    .stats-grid .stat-card[data-order="1"],
+    .stats-grid .stat-card[data-order="2"],
+    .stats-grid .stat-card[data-order="3"] {
+      grid-column: span 2;
+    }
+
+    .stats-grid .stat-card[data-order="4"],
+    .stats-grid .stat-card[data-order="5"] {
+      grid-column: span 3;
+    }
+
+    @media (min-width: 768px) {
+      .stats-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+
+      .stats-grid .stat-card[data-order="1"],
+      .stats-grid .stat-card[data-order="2"],
+      .stats-grid .stat-card[data-order="3"],
+      .stats-grid .stat-card[data-order="4"],
+      .stats-grid .stat-card[data-order="5"] {
+        grid-column: span 1;
+      }
+    }
+
+    .stat-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 16px 12px;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: var(--border-light);
+    }
+
+    .stat-card.highlight {
+      background: linear-gradient(135deg, rgba(74, 156, 174, 0.08) 0%, rgba(26, 92, 92, 0.05) 100%);
+      border-color: rgba(74, 156, 174, 0.2);
+    }
+
+    .stat-card.highlight .stat-value {
+      color: var(--emerald);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    @media (max-width: 767px) {
+      .stat-value {
+        font-size: 20px;
+      }
+    }
+
+    .stat-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .stat-sub {
+      font-size: 9px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    /* Inset Box */
+    .inset-box {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .inset-label {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    /* Chart Container */
+    .chart-container {
+      position: relative;
+      height: 200px;
+      width: 100%;
+    }
+
+    @media (min-width: 768px) {
+      .chart-container {
+        height: 220px;
+      }
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 9px;
+      color: var(--text-dim);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Two Column Layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    @media (min-width: 768px) {
+      .two-col {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .two-col > .card {
+      margin-bottom: 0;
+    }
+
+    /* Week Rank List */
+    .week-rank-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .week-rank-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+
+    .week-rank-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border-light);
+    }
+
+    .week-rank-item.top {
+      background: linear-gradient(135deg, rgba(74, 156, 174, 0.08) 0%, transparent 100%);
+      border-color: rgba(74, 156, 174, 0.15);
+    }
+
+    .week-rank-item.bottom {
+      opacity: 0.6;
+    }
+
+    .week-rank-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .week-rank-position {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 28px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .week-rank-item.bottom .week-rank-position {
+      color: var(--text-dim);
+    }
+
+    .week-rank-num {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      min-width: 55px;
+    }
+
+    .week-rank-tags {
+      display: flex;
+      gap: 4px;
+    }
+
+    .week-rank-tag {
+      padding: 2px 8px;
+      background: rgba(74, 156, 174, 0.1);
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--accent-muted);
+    }
+
+    .week-rank-hours {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .week-rank-hours.low {
+      color: var(--text-muted);
+    }
+
+    .week-rank-separator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 0;
+      color: var(--text-dim);
+      font-size: 14px;
+      letter-spacing: 4px;
+    }
+
+    .week-rank-expanded {
+      display: none;
+    }
+
+    .week-rank-expanded.show {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Milestones */
+    .milestones {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .milestone {
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .milestone span {
+      color: var(--accent-muted);
+    }
+
+    /* Tracker Page */
+    .tracker-header {
+      margin-bottom: 24px;
+    }
+
+    .tracker-header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .tracker-header p {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .tracker-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary {
+      background: var(--bg-inset);
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-elevated);
+      border-color: var(--border-medium);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, rgba(74, 156, 174, 0.25) 0%, rgba(74, 156, 174, 0.1) 100%);
+      border: 1px solid rgba(74, 156, 174, 0.3);
+      color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(180deg, rgba(74, 156, 174, 0.35) 0%, rgba(74, 156, 174, 0.15) 100%);
+      box-shadow: 0 0 16px rgba(74, 156, 174, 0.2);
+    }
+
+    .btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Week Selector */
+    .week-selector {
+      margin-bottom: 20px;
+    }
+
+    .week-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .week-nav-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-inset);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .week-nav-btn:hover:not(:disabled) {
+      background: var(--bg-elevated);
+      border-color: var(--border-medium);
+    }
+
+    .week-nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .week-nav-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .week-nav-info {
+      text-align: center;
+    }
+
+    .week-nav-info .week-num {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .week-nav-info .week-num span {
+      color: var(--accent);
+    }
+
+    .week-nav-info .week-total-label {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .week-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+    }
+
+    .week-pill {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-dim);
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .week-pill:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border-light);
+      color: var(--text-muted);
+    }
+
+    .week-pill.active {
+      background: linear-gradient(180deg, rgba(74, 156, 174, 0.25) 0%, rgba(74, 156, 174, 0.1) 100%);
+      border-color: rgba(74, 156, 174, 0.3);
+      color: var(--accent);
+    }
+
+    .week-pill.over100 {
+      background: rgba(34, 197, 94, 0.08);
+      border-color: rgba(34, 197, 94, 0.15);
+      color: var(--emerald-muted);
+    }
+
+    .week-pill.over100.active {
+      background: linear-gradient(180deg, rgba(74, 156, 174, 0.25) 0%, rgba(74, 156, 174, 0.1) 100%);
+      border-color: rgba(74, 156, 174, 0.3);
+      color: var(--accent);
+    }
+
+    /* Daily Grid */
+    .daily-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .daily-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .day-input {
+      text-align: center;
+    }
+
+    .day-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .day-value-btn {
+      width: 100%;
+      padding: 14px 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .day-value-btn:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(74, 156, 174, 0.3);
+    }
+
+    .day-value-btn .hours {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .day-value-btn .unit {
+      font-size: 8px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .day-bar {
+      height: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .day-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--petroleum) 0%, var(--accent) 100%);
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    /* Tags */
+    .tags-section {
+      margin-bottom: 20px;
+    }
+
+    .tags-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tag:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border-light);
+    }
+
+    .tag.selected {
+      background: rgba(74, 156, 174, 0.1);
+      border-color: rgba(74, 156, 174, 0.25);
+      color: var(--accent);
+    }
+
+    .tag .remove {
+      width: 14px;
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      font-size: 10px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .tag:hover .remove {
+      opacity: 1;
+    }
+
+    .tag-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 7px 14px;
+      background: transparent;
+      border: 1px dashed var(--border-light);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tag-add:hover {
+      border-color: rgba(74, 156, 174, 0.4);
+      color: var(--accent-muted);
+    }
+
+    /* Week Table */
+    .week-table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .week-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    .week-table th {
+      padding: 12px 8px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-dim);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .week-table th:first-child {
+      text-align: left;
+      padding-left: 16px;
+      border-radius: 8px 0 0 0;
+    }
+
+    .week-table th:last-child {
+      text-align: right;
+      padding-right: 16px;
+      border-radius: 0 8px 0 0;
+    }
+
+    .week-table td {
+      padding: 10px 8px;
+      text-align: center;
+      border-top: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .week-table td:first-child {
+      text-align: left;
+      padding-left: 16px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .week-table td:last-child {
+      text-align: right;
+      padding-right: 16px;
+      font-weight: 600;
+    }
+
+    .week-table tr {
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .week-table tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .week-table tr.active {
+      background: rgba(74, 156, 174, 0.05);
+    }
+
+    .week-table tr.active td:first-child {
+      color: var(--accent);
+    }
+
+    .week-table .high {
+      color: var(--accent);
+    }
+
+    .week-table .over100 {
+      color: var(--emerald);
+    }
+
+    .week-table .tags-cell {
+      max-width: 120px;
+    }
+
+    .week-table .mini-tag {
+      display: inline-block;
+      padding: 2px 6px;
+      background: rgba(74, 156, 174, 0.1);
+      border-radius: 4px;
+      font-size: 8px;
+      font-weight: 500;
+      color: var(--accent-muted);
+      margin: 1px;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      position: relative;
+      background: linear-gradient(175deg, #111315 0%, #0b0c0e 40%, #080909 100%);
+      border-radius: 20px;
+      padding: 28px;
+      max-width: 320px;
+      width: 100%;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.04) inset,
+        0 0 0 1px var(--border-subtle),
+        0 24px 48px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      padding: 1px;
+      background: linear-gradient(
+        135deg,
+        rgba(74, 156, 174, 0.2) 0%,
+        transparent 35%,
+        transparent 65%,
+        rgba(26, 92, 92, 0.15) 100%
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .modal h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 20px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: rgba(74, 156, 174, 0.4);
+      box-shadow: 0 0 0 3px rgba(74, 156, 174, 0.1);
+    }
+
+    .modal-input.text {
+      font-size: 14px;
+      font-weight: 500;
+      text-align: left;
+    }
+
+    .modal-input::placeholder {
+      color: var(--text-dim);
+      font-weight: 400;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-actions .btn {
+      flex: 1;
+      justify-content: center;
+      padding: 12px 16px;
+    }
+
+    /* Week Breakdown Table */
+    .week-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .day-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .day-row:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border-light);
+    }
+
+    .day-row.empty {
+      opacity: 0.5;
+    }
+
+    .day-row.has-data {
+      border-color: var(--border-light);
+    }
+
+    .day-row.today {
+      background: linear-gradient(135deg, rgba(74, 156, 174, 0.05) 0%, transparent 100%);
+      border-color: rgba(74, 156, 174, 0.2);
+    }
+
+    .day-row-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      width: 40px;
+      flex-shrink: 0;
+    }
+
+    .day-row-hours {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .day-row-hours.zero {
+      color: var(--text-dim);
+      font-weight: 400;
+    }
+
+    .day-row-tags {
+      display: flex;
+      gap: 4px;
+      margin-right: 12px;
+    }
+
+    .day-row-tag {
+      padding: 2px 6px;
+      background: rgba(74, 156, 174, 0.1);
+      border-radius: 4px;
+      font-size: 8px;
+      font-weight: 500;
+      color: var(--accent-muted);
+    }
+
+    .day-row-notes {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-right: 12px;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .day-row-edit {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .day-row-edit:hover {
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+    }
+
+    .day-row-edit svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .day-row-cta {
+      padding: 6px 14px;
+      background: linear-gradient(180deg, rgba(74, 156, 174, 0.2) 0%, rgba(74, 156, 174, 0.08) 100%);
+      border: 1px solid rgba(74, 156, 174, 0.25);
+      border-radius: 6px;
+      color: var(--accent);
+      font-family: inherit;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-left: auto;
+    }
+
+    .day-row-cta:hover {
+      background: linear-gradient(180deg, rgba(74, 156, 174, 0.3) 0%, rgba(74, 156, 174, 0.12) 100%);
+      box-shadow: 0 0 12px rgba(74, 156, 174, 0.2);
+    }
+
+    /* Comparison Chart */
+    .comparison-toggle {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-inset);
+      padding: 3px;
+      border-radius: 6px;
+    }
+
+    .toggle-btn {
+      padding: 5px 10px;
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .toggle-btn:hover {
+      color: var(--text-muted);
+    }
+
+    .toggle-btn.active {
+      background: rgba(74, 156, 174, 0.15);
+      color: var(--accent);
+    }
+
+    .comparison-summary {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .comparison-stat {
+      text-align: center;
+    }
+
+    .comparison-stat-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .comparison-stat-value.up {
+      color: var(--emerald);
+    }
+
+    .comparison-stat-value.down {
+      color: #ef4444;
+    }
+
+    .comparison-stat-label {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    /* Modal Fields */
+    .modal-field {
+      margin-bottom: 16px;
+    }
+
+    .modal-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .modal-textarea {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .modal-textarea:focus {
+      outline: none;
+      border-color: rgba(74, 156, 174, 0.4);
+      box-shadow: 0 0 0 3px rgba(74, 156, 174, 0.1);
+    }
+
+    .modal-textarea::placeholder {
+      color: var(--text-dim);
+    }
+
+    .modal-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .modal-tag {
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-tag:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border-light);
+    }
+
+    .modal-tag.selected {
+      background: rgba(74, 156, 174, 0.15);
+      border-color: rgba(74, 156, 174, 0.3);
+      color: var(--accent);
+    }
+
+    .modal-tag-add {
+      padding: 8px 14px;
+      background: transparent;
+      border: 1px dashed var(--border-light);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-tag-add:hover {
+      border-color: rgba(74, 156, 174, 0.4);
+      color: var(--accent-muted);
+    }
+
+    /* Footer */
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 0;
+      margin-top: 20px;
+    }
+
+    .footer-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-line {
+      height: 1px;
+      width: 32px;
+      background: linear-gradient(90deg, transparent 0%, var(--border-light) 100%);
+    }
+
+    .footer-line:last-child {
+      background: linear-gradient(90deg, var(--border-light) 0%, transparent 100%);
+    }
+
+    .footer-text {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <div class="nav-brand-text">
+          <span class="nav-char nav-d">D</span><span class="nav-char nav-8">8</span><span class="nav-char nav-f">F</span>
+        </div>
+      </div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-tab="dashboard">Dashboard</button>
+        <button class="nav-tab" data-tab="tracker">Track</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Dashboard Page -->
+    <div id="dashboard" class="page active">
+      <div class="header">
+        <div class="brand-title">
+          <span class="brand-char brand-d">D</span><span class="brand-char brand-8">8</span><span class="brand-char brand-f">F</span>
+        </div>
+        <div class="brand-divider"></div>
+        <div class="header-label">Performance Metrics</div>
+      </div>
+
+      <div class="stats-grid" id="statsGrid"></div>
+
+      <!-- Current Week Section -->
+      <div class="two-col" style="margin-bottom: 20px;">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <span class="card-title">This Week</span>
+              <span class="card-subtitle" id="currentWeekLabel"></span>
+            </div>
+            <span class="card-value" id="currentWeekTotal">0h</span>
+          </div>
+          <div class="week-breakdown" id="weekBreakdown"></div>
+        </div>
+
+        <div class="card" style="display: flex; flex-direction: column;">
+          <div class="card-header">
+            <span class="card-title">This Week</span>
+            <div class="comparison-toggle">
+              <button class="toggle-btn active" data-mode="lastWeek">vs Last Week</button>
+              <button class="toggle-btn" data-mode="average">vs Average</button>
+            </div>
+          </div>
+          <div class="chart-container" style="flex: 1; min-height: 200px;">
+            <canvas id="comparisonChart"></canvas>
+          </div>
+          <div class="comparison-summary" id="comparisonSummary"></div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card" style="display: flex; flex-direction: column;">
+          <div class="card-header">
+            <span class="card-title">Weekly Hours</span>
+          </div>
+          <div class="chart-container" style="flex: 1; min-height: 180px;">
+            <canvas id="weeklyChart"></canvas>
+          </div>
+          <div class="legend" id="weeklyLegend"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Hours by Week</span>
+            <button class="card-action" id="seeAllBtn">See all</button>
+          </div>
+          <div id="weekRankList"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Cumulative Progress</span>
+        </div>
+        <div class="chart-container" style="height: 200px;">
+          <canvas id="cumulativeChart"></canvas>
+        </div>
+        <div class="milestones" id="milestonesContainer"></div>
+      </div>
+
+      <div class="footer">
+        <div class="footer-content">
+          <div class="footer-line"></div>
+          <span class="footer-text">Built for the bold</span>
+          <div class="footer-line"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tracker Page -->
+    <div id="tracker" class="page">
+      <div class="tracker-header">
+        <h1>Track Weekly Hours</h1>
+        <p>Tap hours to edit • Auto-saves to browser</p>
+        <div class="tracker-actions">
+          <button class="btn btn-secondary" id="exportBtn">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export CSV
+          </button>
+          <button class="btn btn-secondary" id="importBtn">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Import CSV
+          </button>
+          <button class="btn btn-primary" id="addWeekBtn">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add Week
+          </button>
+        </div>
+        <input type="file" accept=".csv" class="hidden-input" id="fileInput">
+      </div>
+
+      <div class="card week-selector">
+        <div class="week-nav">
+          <button class="week-nav-btn" id="prevWeekBtn">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div class="week-nav-info">
+            <div class="week-num">Week <span id="currentWeekNum">30</span></div>
+            <div class="week-total-label">of <span id="totalWeeks">30</span> weeks</div>
+          </div>
+          <button class="week-nav-btn" id="nextWeekBtn">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div class="week-pills" id="weekPills"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Daily Breakdown</span>
+          <span class="card-value" id="weekTotalDisplay">124h</span>
+        </div>
+
+        <div class="tags-section">
+          <div class="tags-label">Assign to</div>
+          <div class="tags-container" id="tagsContainer"></div>
+        </div>
+
+        <div class="daily-grid" id="dailyInputs"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Week Visual</span>
+        </div>
+        <div class="chart-container" style="height: 160px;">
+          <canvas id="trackerDailyChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle);">
+          <span class="card-title">All Weeks</span>
+        </div>
+        <div class="week-table-container">
+          <table class="week-table" id="weekTable">
+            <thead>
+              <tr>
+                <th>Week</th>
+                <th>Tags</th>
+                <th>Mon</th>
+                <th>Tue</th>
+                <th>Wed</th>
+                <th>Thu</th>
+                <th>Fri</th>
+                <th>Sat</th>
+                <th>Sun</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="weekTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="footer-content">
+          <div class="footer-line"></div>
+          <span class="footer-text">Built for the bold</span>
+          <div class="footer-line"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Hours Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <h3 id="editModalTitle">Edit Hours</h3>
+      <input type="number" step="0.5" min="0" max="24" class="modal-input" id="editInput">
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveEditBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Tag Modal -->
+  <div class="modal-overlay" id="addTagModal">
+    <div class="modal">
+      <h3>Add Category</h3>
+      <input type="text" class="modal-input text" id="newTagInput" placeholder="Enter category name">
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelTagBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveTagBtn">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Work Day Modal -->
+  <div class="modal-overlay" id="workDayModal">
+    <div class="modal" style="max-width: 360px;">
+      <h3 id="workDayModalTitle">Update Monday</h3>
+
+      <div class="modal-field">
+        <label class="modal-label">Hours Worked</label>
+        <input type="number" step="0.5" min="0" max="24" class="modal-input" id="workDayHours" placeholder="0">
+      </div>
+
+      <div class="modal-field">
+        <label class="modal-label">Tags</label>
+        <div class="modal-tags" id="workDayTags"></div>
+      </div>
+
+      <div class="modal-field">
+        <label class="modal-label">Notes</label>
+        <textarea class="modal-textarea" id="workDayNotes" placeholder="What did you work on?" rows="3"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelWorkDayBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveWorkDayBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const defaultTags = ['Nika'];
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    // Premium color palette
+    const colorRanges = [
+      { min: 0, max: 74, color: '#2a3441', label: '< 75h' },
+      { min: 75, max: 79, color: '#1a5c5c', label: '75-79h' },
+      { min: 80, max: 89, color: '#1e6b6b', label: '80-89h' },
+      { min: 90, max: 99, color: '#2a7a7a', label: '90-99h' },
+      { min: 100, max: 109, color: '#3a8f9f', label: '100-109h' },
+      { min: 110, max: 119, color: '#4a9cae', label: '110-119h' },
+      { min: 120, max: 129, color: '#5aacbe', label: '120-129h' },
+      { min: 130, max: 150, color: '#22c55e', label: '130h+' },
+    ];
+
+    function getColorForHours(hours) {
+      for (const range of colorRanges) {
+        if (hours >= range.min && hours <= range.max) return range.color;
+      }
+      return colorRanges[colorRanges.length - 1].color;
+    }
+
+    const historicalWeeks = [
+      { week: 1, mondayDate: '2025-06-30', days: [0, 13, 10.5, 12.5, 11.5, 14.5, 12], total: 75, tags: ['Nika'] },
+      { week: 2, mondayDate: '2025-07-07', days: [13, 13, 13, 12.5, 12.5, 13, 13], total: 90, tags: ['Nika'] },
+      { week: 3, mondayDate: '2025-07-14', days: [16.5, 16.5, 16.5, 16.5, 16.5, 16, 16.5], total: 115, tags: ['Nika'] },
+      { week: 4, mondayDate: '2025-07-21', days: [12.5, 12.5, 12.5, 12.5, 13, 12.5, 12.5], total: 88, tags: ['Nika'] },
+      { week: 5, mondayDate: '2025-07-28', days: [15, 15, 15, 15, 14.5, 15, 14.5], total: 104, tags: ['Nika'] },
+      { week: 6, mondayDate: '2025-08-04', days: [16, 16, 16, 16, 16, 16, 16], total: 112, tags: ['Nika'] },
+      { week: 7, mondayDate: '2025-08-11', days: [14, 14, 14, 13.5, 14, 13.5, 14], total: 97, tags: ['Nika'] },
+      { week: 8, mondayDate: '2025-08-18', days: [15.5, 15.5, 15.5, 15.5, 15, 15.5, 15.5], total: 108, tags: ['Nika'] },
+      { week: 9, mondayDate: '2025-08-25', days: [15.5, 15.5, 15.5, 16, 15.5, 15.5, 15.5], total: 109, tags: ['Nika'] },
+      { week: 10, mondayDate: '2025-09-01', days: [15, 15, 15, 15, 15, 15, 15], total: 105, tags: ['Nika'] },
+      { week: 11, mondayDate: '2025-09-08', days: [13.5, 13.5, 14, 13.5, 13.5, 13.5, 13.5], total: 95, tags: ['Nika'] },
+      { week: 12, mondayDate: '2025-09-15', days: [13.5, 13, 13.5, 13, 13.5, 13.5, 13], total: 93, tags: ['Nika'] },
+      { week: 13, mondayDate: '2025-09-22', days: [19.5, 19.5, 20, 19.5, 19.5, 19.5, 19.5], total: 137, tags: ['Nika'] },
+      { week: 14, mondayDate: '2025-09-29', days: [11, 11, 11, 11, 11, 11, 11], total: 77, tags: ['Nika'] },
+      { week: 15, mondayDate: '2025-10-06', days: [14, 14, 14, 14, 14, 14, 14], total: 98, tags: ['Nika'] },
+      { week: 16, mondayDate: '2025-10-13', days: [14.5, 14.5, 14, 14.5, 14, 14.5, 14], total: 100, tags: ['Nika'] },
+      { week: 17, mondayDate: '2025-10-20', days: [13, 13, 13, 13, 13, 13, 13], total: 91, tags: ['Nika'] },
+      { week: 18, mondayDate: '2025-10-27', days: [16.5, 16.5, 17, 16.5, 16.5, 16.5, 16.5], total: 116, tags: ['Nika'] },
+      { week: 19, mondayDate: '2025-11-03', days: [15, 15, 15.5, 15, 15.5, 15, 15], total: 106, tags: ['Nika'] },
+      { week: 20, mondayDate: '2025-11-10', days: [13, 13, 13, 13, 13, 13, 13], total: 91, tags: ['Nika'] },
+      { week: 21, mondayDate: '2025-11-17', days: [12, 12, 12, 11.5, 12, 11.5, 12], total: 83, tags: ['Nika'] },
+      { week: 22, mondayDate: '2025-11-24', days: [17, 17, 17.5, 17, 17, 17.5, 17], total: 120, tags: ['Nika'] },
+      { week: 23, mondayDate: '2025-12-01', days: [14, 13.5, 14, 13.5, 14, 13.5, 13.5], total: 96, tags: ['Nika'] },
+      { week: 24, mondayDate: '2025-12-08', days: [12, 12, 12, 12, 12, 12, 12], total: 84, tags: ['Nika'] },
+      { week: 25, mondayDate: '2025-12-15', days: [14, 14, 14, 13.5, 14, 13.5, 14], total: 97, tags: ['Nika'] },
+      { week: 26, mondayDate: '2025-12-22', days: [18.5, 18.5, 18, 18.5, 18, 18.5, 18], total: 128, tags: ['Nika'] },
+      { week: 27, mondayDate: '2025-12-29', days: [14.5, 14, 14.5, 14, 14.5, 14.5, 14], total: 100, tags: ['Nika'] },
+      { week: 28, mondayDate: '2026-01-05', days: [16, 15.5, 16, 15.5, 16, 15.5, 15.5], total: 110, tags: ['Nika'] },
+      { week: 29, mondayDate: '2026-01-12', days: [15.5, 15.5, 15.5, 15, 15.5, 15.5, 15.5], total: 108, tags: ['Nika'] },
+      { week: 30, mondayDate: '2026-01-19', days: [20.5, 17.5, 19, 16, 18, 13, 20], total: 124, tags: ['Nika'] },
+      { week: 31, mondayDate: '2026-01-26', days: [0, 0, 0, 0, 0, 0, 0], total: 0, tags: ['Nika'] },
+    ];
+
+    let weeklyData = [];
+    let availableTags = [];
+    let currentWeekIndex = 0;
+    let editingDayIndex = null;
+    let showAllWeeks = false;
+    let weeklyChart, cumulativeChart, trackerDailyChart, comparisonChart;
+    let editingWorkDay = null;
+
+    function loadData() {
+      try {
+        const saved = localStorage.getItem('df-work-tracker');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          weeklyData = parsed.weeks || [];
+          availableTags = parsed.tags || [...defaultTags];
+
+          // Check if data has mondayDate (new format), if not, use historical
+          if (weeklyData.length > 0 && !weeklyData[0].mondayDate) {
+            console.log('Upgrading to new data format with dates');
+            weeklyData = JSON.parse(JSON.stringify(historicalWeeks));
+          }
+        } else {
+          weeklyData = JSON.parse(JSON.stringify(historicalWeeks));
+          availableTags = [...defaultTags];
+        }
+        weeklyData.forEach(w => {
+          if (!w.tags) w.tags = ['Nika'];
+          // Initialize dayData if not exists
+          if (!w.dayData) {
+            w.dayData = dayNames.map((_, i) => ({
+              hours: w.days[i] || 0,
+              tags: [],
+              notes: ''
+            }));
+          }
+        });
+      } catch (e) {
+        weeklyData = JSON.parse(JSON.stringify(historicalWeeks));
+        availableTags = [...defaultTags];
+      }
+
+      // Ensure current week exists based on today's date
+      currentWeekIndex = getCurrentWeekIndex();
+      saveData(); // Save in case new weeks were created
+    }
+
+    function saveData() {
+      try {
+        localStorage.setItem('df-work-tracker', JSON.stringify({
+          weeks: weeklyData,
+          tags: availableTags
+        }));
+      } catch (e) {
+        console.error('Failed to save:', e);
+      }
+    }
+
+    function getStats() {
+      // Only count weeks with actual data (total > 0)
+      const weeksWithData = weeklyData.filter(w => w.total > 0);
+      const totalHours = weeksWithData.reduce((sum, w) => sum + w.total, 0);
+      const consecutiveDays = weeksWithData.length * 7;
+      const avgPerWeek = weeksWithData.length > 0 ? totalHours / weeksWithData.length : 0;
+      const weeksOver100 = weeksWithData.filter(w => w.total >= 100).length;
+      const multiplier = avgPerWeek / 40;
+      return { totalHours, consecutiveDays, avgPerWeek, weeksOver100, multiplier, weeksWithData: weeksWithData.length };
+    }
+
+    function getCurrentWeekIndex() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      for (let i = weeklyData.length - 1; i >= 0; i--) {
+        const week = weeklyData[i];
+        if (week.mondayDate) {
+          const mondayDate = new Date(week.mondayDate);
+          const sundayDate = new Date(mondayDate);
+          sundayDate.setDate(sundayDate.getDate() + 6);
+
+          if (today >= mondayDate && today <= sundayDate) {
+            return i;
+          }
+        }
+      }
+
+      // If no match, check if we need to create a new week
+      const lastWeek = weeklyData[weeklyData.length - 1];
+      if (lastWeek && lastWeek.mondayDate) {
+        const lastMonday = new Date(lastWeek.mondayDate);
+        const nextMonday = new Date(lastMonday);
+        nextMonday.setDate(nextMonday.getDate() + 7);
+
+        if (today >= nextMonday) {
+          // Create new week(s) as needed
+          while (today >= nextMonday) {
+            const newWeek = {
+              week: weeklyData.length + 1,
+              mondayDate: nextMonday.toISOString().split('T')[0],
+              days: [0, 0, 0, 0, 0, 0, 0],
+              total: 0,
+              tags: ['Nika'],
+              dayData: dayNames.map(() => ({ hours: 0, tags: [], notes: '' }))
+            };
+            weeklyData.push(newWeek);
+            nextMonday.setDate(nextMonday.getDate() + 7);
+          }
+          saveData();
+          return weeklyData.length - 1;
+        }
+      }
+
+      return weeklyData.length - 1;
+    }
+
+    function getMilestones() {
+      const milestones = [];
+      let running = 0;
+      const targets = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000];
+      weeklyData.forEach((w, i) => {
+        running += w.total;
+        targets.forEach(t => {
+          if (!milestones.find(m => m.hours === t) && running >= t) {
+            milestones.push({ hours: t, week: i + 1 });
+          }
+        });
+      });
+      return milestones;
+    }
+
+    function isMobile() {
+      return window.innerWidth < 768;
+    }
+
+    function renderDashboardStats() {
+      const stats = getStats();
+      document.getElementById('statsGrid').innerHTML = `
+        <div class="stat-card" data-order="1">
+          <div class="stat-value">${stats.totalHours.toLocaleString()}</div>
+          <div class="stat-label">Total Hours</div>
+          <div class="stat-sub">hours worked</div>
+        </div>
+        <div class="stat-card highlight" data-order="2">
+          <div class="stat-value">${stats.avgPerWeek.toFixed(1)}</div>
+          <div class="stat-label">Avg/Week</div>
+          <div class="stat-sub">hours</div>
+        </div>
+        <div class="stat-card" data-order="3">
+          <div class="stat-value">${stats.consecutiveDays}</div>
+          <div class="stat-label">Days</div>
+          <div class="stat-sub">consecutive</div>
+        </div>
+        <div class="stat-card" data-order="4">
+          <div class="stat-value">${stats.weeksOver100}</div>
+          <div class="stat-label">100h+ Weeks</div>
+          <div class="stat-sub">of ${stats.weeksWithData}</div>
+        </div>
+        <div class="stat-card" data-order="5">
+          <div class="stat-value">${stats.multiplier.toFixed(2)}×</div>
+          <div class="stat-label">Multiplier</div>
+          <div class="stat-sub">vs 40h</div>
+        </div>
+      `;
+
+      const milestones = getMilestones();
+      document.getElementById('milestonesContainer').innerHTML = milestones.map(m =>
+        `<span class="milestone"><span>${m.hours.toLocaleString()}h</span> → W${m.week}</span>`
+      ).join('');
+
+      renderWeekRankList();
+      renderLegend();
+      renderWeekBreakdown();
+      renderComparisonChart();
+    }
+
+    function renderWeekBreakdown() {
+      const currentWeekIdx = getCurrentWeekIndex();
+      const currentWeek = weeklyData[currentWeekIdx];
+      if (!currentWeek) return;
+
+      // Initialize dayData if not exists
+      if (!currentWeek.dayData) {
+        currentWeek.dayData = dayNames.map((_, i) => ({
+          hours: currentWeek.days[i] || 0,
+          tags: [],
+          notes: ''
+        }));
+      }
+
+      document.getElementById('currentWeekTotal').textContent = currentWeek.total.toFixed(1) + 'h';
+
+      // Set week label
+      let weekLabel = `Week ${currentWeek.week}`;
+      if (currentWeek.mondayDate) {
+        const monday = new Date(currentWeek.mondayDate);
+        const sunday = new Date(monday);
+        sunday.setDate(sunday.getDate() + 6);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        weekLabel = `Week ${currentWeek.week} · ${months[monday.getMonth()]} ${monday.getDate()} - ${months[sunday.getMonth()]} ${sunday.getDate()}`;
+      }
+      document.getElementById('currentWeekLabel').textContent = weekLabel;
+
+      // Find first empty day (next day to add)
+      let nextDayIndex = -1;
+      for (let i = 0; i < 7; i++) {
+        if (currentWeek.dayData[i].hours === 0) {
+          // Check if previous days have data (sequential)
+          if (i === 0 || currentWeek.dayData[i - 1].hours > 0) {
+            nextDayIndex = i;
+          }
+          break;
+        }
+      }
+
+      // Get today's day index (0 = Monday for our array)
+      const today = new Date();
+      const todayIndex = (today.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
+
+      const html = dayNames.map((day, i) => {
+        const dayData = currentWeek.dayData[i];
+        const hasData = dayData.hours > 0;
+        const isNextDay = i === nextDayIndex;
+        const isToday = i === todayIndex;
+        const tagsHtml = (dayData.tags || []).map(t => `<span class="day-row-tag">${t}</span>`).join('');
+
+        if (isNextDay) {
+          return `
+            <div class="day-row ${isToday ? 'today' : ''}">
+              <span class="day-row-name">${day}${isToday ? ' •' : ''}</span>
+              <span class="day-row-hours zero">—</span>
+              <button class="day-row-cta" data-day="${i}">+ Add ${day}</button>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="day-row ${hasData ? 'has-data' : 'empty'} ${isToday ? 'today' : ''}">
+            <span class="day-row-name">${day}${isToday ? ' •' : ''}</span>
+            <span class="day-row-hours ${hasData ? '' : 'zero'}">${hasData ? dayData.hours.toFixed(1) + 'h' : '—'}</span>
+            ${tagsHtml ? `<div class="day-row-tags">${tagsHtml}</div>` : ''}
+            ${dayData.notes ? `<span class="day-row-notes" title="${dayData.notes}">${dayData.notes}</span>` : ''}
+            <button class="day-row-edit" data-day="${i}" title="Edit ${day}">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+              </svg>
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('weekBreakdown').innerHTML = html;
+    }
+
+    let comparisonMode = 'lastWeek'; // 'lastWeek' or 'average'
+
+    function renderComparisonChart() {
+      const currentWeekIdx = getCurrentWeekIndex();
+      const currentWeek = weeklyData[currentWeekIdx];
+
+      if (!currentWeek) return;
+
+      const currentDays = currentWeek.dayData ? currentWeek.dayData.map(d => d.hours) : currentWeek.days;
+
+      let compareDays = [];
+      let compareLabel = '';
+
+      if (comparisonMode === 'lastWeek') {
+        const lastWeekIdx = currentWeekIdx - 1;
+        if (lastWeekIdx < 0) {
+          document.getElementById('comparisonSummary').innerHTML = '<span style="color: var(--text-dim); font-size: 11px;">No previous week data</span>';
+          return;
+        }
+        const lastWeek = weeklyData[lastWeekIdx];
+        compareDays = lastWeek.dayData ? lastWeek.dayData.map(d => d.hours) : lastWeek.days;
+        compareLabel = 'Last Week';
+      } else {
+        // Calculate average per day from all weeks with data
+        const weeksWithData = weeklyData.filter(w => w.total > 0 && weeklyData.indexOf(w) !== currentWeekIdx);
+        if (weeksWithData.length === 0) {
+          document.getElementById('comparisonSummary').innerHTML = '<span style="color: var(--text-dim); font-size: 11px;">No historical data</span>';
+          return;
+        }
+        compareDays = [0, 0, 0, 0, 0, 0, 0];
+        weeksWithData.forEach(w => {
+          const days = w.dayData ? w.dayData.map(d => d.hours) : w.days;
+          days.forEach((h, i) => compareDays[i] += h);
+        });
+        compareDays = compareDays.map(h => h / weeksWithData.length);
+        compareLabel = 'Average';
+      }
+
+      // Prepare stacked data - show both values with different opacities
+      const lowerData = [];
+      const higherData = [];
+      const lowerColors = [];
+      const higherColors = [];
+
+      for (let i = 0; i < 7; i++) {
+        const curr = currentDays[i] || 0;
+        const comp = compareDays[i] || 0;
+        const lower = Math.min(curr, comp);
+        const higher = Math.abs(curr - comp);
+
+        lowerData.push(lower);
+        higherData.push(higher);
+
+        // Lower bar is always lower opacity (the lesser of the two)
+        // If current is higher, lower = compare (dimmer), higher = current's extra (brighter)
+        // If compare is higher, lower = current (dimmer), higher = compare's extra (different color)
+        lowerColors.push('rgba(15, 45, 60, 0.5)'); // Lower opacity for the lesser value
+        higherColors.push(curr >= comp ? '#2a6a7a' : '#1a4a5a');
+      }
+
+      const ctx = document.getElementById('comparisonChart').getContext('2d');
+      if (comparisonChart) comparisonChart.destroy();
+
+      comparisonChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: dayNames,
+          datasets: [
+            {
+              label: 'Base',
+              data: lowerData,
+              backgroundColor: lowerColors,
+              borderRadius: { topLeft: 0, topRight: 0, bottomLeft: 6, bottomRight: 6 },
+              borderSkipped: false,
+            },
+            {
+              label: 'Difference',
+              data: higherData,
+              backgroundColor: higherColors,
+              borderRadius: { topLeft: 6, topRight: 6, bottomLeft: 0, bottomRight: 0 },
+              borderSkipped: false,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              stacked: true,
+              grid: { display: false, drawBorder: false },
+              ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } },
+              border: { display: false }
+            },
+            y: {
+              stacked: true,
+              grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+              ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 9 } },
+              border: { display: false },
+              suggestedMax: 24
+            }
+          }
+        }
+      });
+
+      // Summary
+      const currentTotal = currentDays.reduce((a, b) => a + b, 0);
+      const compareTotal = compareDays.reduce((a, b) => a + b, 0);
+      const diff = currentTotal - compareTotal;
+      const pctChange = compareTotal > 0 ? ((diff / compareTotal) * 100).toFixed(0) : 0;
+
+      document.getElementById('comparisonSummary').innerHTML = `
+        <div class="comparison-stat">
+          <div class="comparison-stat-value">${currentTotal.toFixed(1)}h</div>
+          <div class="comparison-stat-label">This Week</div>
+        </div>
+        <div class="comparison-stat">
+          <div class="comparison-stat-value">${compareTotal.toFixed(1)}h</div>
+          <div class="comparison-stat-label">${compareLabel}</div>
+        </div>
+        <div class="comparison-stat">
+          <div class="comparison-stat-value ${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '+' : ''}${diff.toFixed(1)}h</div>
+          <div class="comparison-stat-label">${diff >= 0 ? 'Ahead' : 'Behind'} (${diff >= 0 ? '+' : ''}${pctChange}%)</div>
+        </div>
+      `;
+    }
+
+    function openWorkDayModal(dayIndex) {
+      const currentWeekIdx = getCurrentWeekIndex();
+      const currentWeek = weeklyData[currentWeekIdx];
+      if (!currentWeek.dayData) {
+        currentWeek.dayData = dayNames.map((_, i) => ({
+          hours: currentWeek.days[i] || 0,
+          tags: [],
+          notes: ''
+        }));
+      }
+
+      editingWorkDay = dayIndex;
+      const dayData = currentWeek.dayData[dayIndex];
+
+      document.getElementById('workDayModalTitle').textContent = `Update ${dayNames[dayIndex]}`;
+      document.getElementById('workDayHours').value = dayData.hours || '';
+      document.getElementById('workDayNotes').value = dayData.notes || '';
+
+      // Render tags
+      const selectedTags = dayData.tags || [];
+      const allTags = ['Nika', ...availableTags.filter(t => t !== 'Nika')];
+      const uniqueTags = [...new Set(allTags)];
+
+      document.getElementById('workDayTags').innerHTML = uniqueTags.map(tag =>
+        `<button class="modal-tag ${selectedTags.includes(tag) ? 'selected' : ''}" data-tag="${tag}">${tag}</button>`
+      ).join('') + '<button class="modal-tag-add" id="addWorkDayTagBtn">+ Add</button>';
+
+      document.getElementById('workDayModal').classList.add('active');
+      document.getElementById('workDayHours').focus();
+    }
+
+    function saveWorkDay() {
+      if (editingWorkDay === null) return;
+
+      const currentWeekIdx = getCurrentWeekIndex();
+      const currentWeek = weeklyData[currentWeekIdx];
+      const hours = parseFloat(document.getElementById('workDayHours').value) || 0;
+      const notes = document.getElementById('workDayNotes').value.trim();
+      const selectedTags = [...document.querySelectorAll('#workDayTags .modal-tag.selected')].map(el => el.dataset.tag);
+
+      currentWeek.dayData[editingWorkDay] = {
+        hours: Math.max(0, Math.min(24, hours)),
+        tags: selectedTags,
+        notes: notes
+      };
+
+      // Update the days array and total
+      currentWeek.days[editingWorkDay] = currentWeek.dayData[editingWorkDay].hours;
+      currentWeek.total = currentWeek.days.reduce((a, b) => a + b, 0);
+
+      saveData();
+      document.getElementById('workDayModal').classList.remove('active');
+      editingWorkDay = null;
+
+      renderWeekBreakdown();
+      renderComparisonChart();
+      renderDashboardStats();
+    }
+
+    function renderLegend() {
+      const maxHours = Math.max(...weeklyData.map(w => w.total));
+      const minHours = Math.min(...weeklyData.map(w => w.total));
+
+      const relevantRanges = colorRanges.filter(r =>
+        (r.min <= maxHours && r.max >= minHours) && r.min >= 75
+      );
+
+      document.getElementById('weeklyLegend').innerHTML = relevantRanges.map(r => `
+        <div class="legend-item">
+          <div class="legend-dot" style="background: ${r.color};"></div>
+          <span>${r.label}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderWeekRankList() {
+      const sorted = [...weeklyData].map((w, i) => ({ ...w, originalIndex: i }))
+        .sort((a, b) => b.total - a.total);
+
+      sorted.forEach((w, i) => w.rank = i + 1);
+
+      const count = isMobile() ? 3 : 5;
+      const top = sorted.slice(0, count);
+      const bottom = sorted.slice(-count); // Don't reverse - keep lowest at bottom
+      const middle = sorted.slice(count, -count);
+
+      let html = '';
+
+      top.forEach(w => {
+        html += `
+          <div class="week-rank-item top">
+            <div class="week-rank-left">
+              <span class="week-rank-position">#${w.rank}</span>
+              <span class="week-rank-num">Week ${w.week}</span>
+              <div class="week-rank-tags">
+                ${(w.tags || []).map(t => `<span class="week-rank-tag">${t}</span>`).join('')}
+              </div>
+            </div>
+            <span class="week-rank-hours">${w.total.toFixed(0)}h</span>
+          </div>
+        `;
+      });
+
+      if (middle.length > 0) {
+        if (showAllWeeks) {
+          html += `<div class="week-rank-expanded show">`;
+          middle.forEach(w => {
+            html += `
+              <div class="week-rank-item">
+                <div class="week-rank-left">
+                  <span class="week-rank-position">#${w.rank}</span>
+                  <span class="week-rank-num">Week ${w.week}</span>
+                  <div class="week-rank-tags">
+                    ${(w.tags || []).map(t => `<span class="week-rank-tag">${t}</span>`).join('')}
+                  </div>
+                </div>
+                <span class="week-rank-hours">${w.total.toFixed(0)}h</span>
+              </div>
+            `;
+          });
+          html += `</div>`;
+        } else {
+          html += `<div class="week-rank-separator">⋮</div>`;
+        }
+      }
+
+      bottom.forEach(w => {
+        html += `
+          <div class="week-rank-item bottom">
+            <div class="week-rank-left">
+              <span class="week-rank-position">#${w.rank}</span>
+              <span class="week-rank-num">Week ${w.week}</span>
+              <div class="week-rank-tags">
+                ${(w.tags || []).map(t => `<span class="week-rank-tag">${t}</span>`).join('')}
+              </div>
+            </div>
+            <span class="week-rank-hours low">${w.total.toFixed(0)}h</span>
+          </div>
+        `;
+      });
+
+      document.getElementById('weekRankList').innerHTML = html;
+      document.getElementById('seeAllBtn').textContent = showAllWeeks ? 'Collapse' : 'See all';
+    }
+
+    function renderCharts() {
+      const weekTotals = weeklyData.map(w => w.total);
+      const weekLabels = weeklyData.map((_, i) => `${i + 1}`);
+      const colors = weekTotals.map(h => getColorForHours(h));
+
+      const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+      if (weeklyChart) weeklyChart.destroy();
+      const maxWeeklyHours = Math.max(...weekTotals) * 1.1; // Add 10% headroom
+
+      weeklyChart = new Chart(weeklyCtx, {
+        type: 'bar',
+        data: {
+          labels: weekLabels,
+          datasets: [{
+            data: weekTotals,
+            backgroundColor: colors,
+            borderRadius: 4,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              grid: { display: false, drawBorder: false },
+              ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 9 } },
+              border: { display: false }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+              ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 9 } },
+              min: 0,
+              suggestedMax: maxWeeklyHours,
+              border: { display: false }
+            }
+          }
+        }
+      });
+
+      let cumulative = 0;
+      const cumulativeData = weekTotals.map(h => cumulative += h);
+      const cumulativeCtx = document.getElementById('cumulativeChart').getContext('2d');
+      if (cumulativeChart) cumulativeChart.destroy();
+
+      const gradient = cumulativeCtx.createLinearGradient(0, 0, 0, 200);
+      gradient.addColorStop(0, 'rgba(74, 156, 174, 0.2)');
+      gradient.addColorStop(1, 'rgba(74, 156, 174, 0)');
+
+      cumulativeChart = new Chart(cumulativeCtx, {
+        type: 'line',
+        data: {
+          labels: weekLabels,
+          datasets: [{
+            data: cumulativeData,
+            borderColor: '#4a9cae',
+            backgroundColor: gradient,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              grid: { display: false, drawBorder: false },
+              ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 9 } },
+              border: { display: false }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+              ticks: {
+                color: 'rgba(255,255,255,0.2)',
+                font: { size: 9 },
+                callback: v => (v / 1000).toFixed(1) + 'k'
+              },
+              border: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    function renderTags() {
+      const currentWeek = weeklyData[currentWeekIndex];
+      const selectedTags = currentWeek.tags || [];
+
+      let html = availableTags.map(tag => {
+        const isSelected = selectedTags.includes(tag);
+        return `
+          <button class="tag ${isSelected ? 'selected' : ''}" data-tag="${tag}">
+            ${tag}
+            <span class="remove" data-remove="${tag}">×</span>
+          </button>
+        `;
+      }).join('');
+
+      html += `<button class="tag-add" id="addTagBtn">+ Add</button>`;
+
+      document.getElementById('tagsContainer').innerHTML = html;
+    }
+
+    function renderTracker() {
+      const currentWeek = weeklyData[currentWeekIndex];
+
+      document.getElementById('currentWeekNum').textContent = currentWeekIndex + 1;
+      document.getElementById('totalWeeks').textContent = weeklyData.length;
+      document.getElementById('weekTotalDisplay').textContent = currentWeek.total.toFixed(1) + 'h';
+
+      document.getElementById('prevWeekBtn').disabled = currentWeekIndex === 0;
+      document.getElementById('nextWeekBtn').disabled = currentWeekIndex === weeklyData.length - 1;
+
+      const pillsContainer = document.getElementById('weekPills');
+      pillsContainer.innerHTML = weeklyData.map((w, i) => {
+        const isActive = i === currentWeekIndex;
+        const isOver100 = w.total >= 100;
+        let classes = 'week-pill';
+        if (isActive) classes += ' active';
+        if (isOver100 && !isActive) classes += ' over100';
+        return `<button class="${classes}" data-week="${i}">${i + 1}</button>`;
+      }).join('');
+
+      renderTags();
+
+      const inputsContainer = document.getElementById('dailyInputs');
+      inputsContainer.innerHTML = dayNames.map((day, i) => `
+        <div class="day-input">
+          <div class="day-label">${day}</div>
+          <button class="day-value-btn" data-day="${i}">
+            <div class="hours">${currentWeek.days[i].toFixed(1)}</div>
+            <div class="unit">hours</div>
+          </button>
+          <div class="day-bar">
+            <div class="day-bar-fill" style="width: ${(currentWeek.days[i] / 24) * 100}%"></div>
+          </div>
+        </div>
+      `).join('');
+
+      const trackerCtx = document.getElementById('trackerDailyChart').getContext('2d');
+      if (trackerDailyChart) trackerDailyChart.destroy();
+
+      const barGradient = trackerCtx.createLinearGradient(0, 0, 0, 160);
+      barGradient.addColorStop(0, '#4a9cae');
+      barGradient.addColorStop(1, '#1a5c5c');
+
+      trackerDailyChart = new Chart(trackerCtx, {
+        type: 'bar',
+        data: {
+          labels: dayNames,
+          datasets: [{
+            data: currentWeek.days,
+            backgroundColor: currentWeek.days.map(h => h >= 18 ? '#22c55e' : barGradient),
+            borderRadius: 6,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              grid: { display: false, drawBorder: false },
+              ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } },
+              border: { display: false }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+              ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 9 } },
+              max: 24,
+              border: { display: false }
+            }
+          }
+        }
+      });
+
+      const tableBody = document.getElementById('weekTableBody');
+      tableBody.innerHTML = weeklyData.map((w, i) => {
+        const isActive = i === currentWeekIndex;
+        const isOver100 = w.total >= 100;
+        const tagsHtml = (w.tags || []).map(t => `<span class="mini-tag">${t}</span>`).join('');
+        return `
+          <tr class="${isActive ? 'active' : ''}" data-week="${i}">
+            <td>W${w.week}</td>
+            <td class="tags-cell">${tagsHtml}</td>
+            ${w.days.map(d => `<td class="${d >= 18 ? 'high' : ''}">${d.toFixed(1)}</td>`).join('')}
+            <td class="${isOver100 ? 'over100' : ''}">${w.total.toFixed(0)}h</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Event listeners
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+
+        if (tab.dataset.tab === 'dashboard') {
+          renderDashboardStats();
+          renderCharts();
+        } else {
+          currentWeekIndex = getCurrentWeekIndex();
+          renderTracker();
+        }
+      });
+    });
+
+    document.getElementById('seeAllBtn').addEventListener('click', () => {
+      showAllWeeks = !showAllWeeks;
+      renderWeekRankList();
+    });
+
+    // Comparison toggle
+    document.querySelector('.comparison-toggle').addEventListener('click', (e) => {
+      const btn = e.target.closest('.toggle-btn');
+      if (btn) {
+        document.querySelectorAll('.comparison-toggle .toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        comparisonMode = btn.dataset.mode;
+        renderComparisonChart();
+      }
+    });
+
+    // Week breakdown interactions
+    document.getElementById('weekBreakdown').addEventListener('click', (e) => {
+      const editBtn = e.target.closest('.day-row-edit');
+      const ctaBtn = e.target.closest('.day-row-cta');
+
+      if (editBtn) {
+        const dayIndex = parseInt(editBtn.dataset.day);
+        openWorkDayModal(dayIndex);
+      } else if (ctaBtn) {
+        const dayIndex = parseInt(ctaBtn.dataset.day);
+        openWorkDayModal(dayIndex);
+      }
+    });
+
+    // Work day modal
+    document.getElementById('cancelWorkDayBtn').addEventListener('click', () => {
+      document.getElementById('workDayModal').classList.remove('active');
+      editingWorkDay = null;
+    });
+
+    document.getElementById('saveWorkDayBtn').addEventListener('click', saveWorkDay);
+
+    document.getElementById('workDayHours').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveWorkDay();
+      if (e.key === 'Escape') {
+        document.getElementById('workDayModal').classList.remove('active');
+        editingWorkDay = null;
+      }
+    });
+
+    document.getElementById('workDayModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('workDayModal')) {
+        document.getElementById('workDayModal').classList.remove('active');
+        editingWorkDay = null;
+      }
+    });
+
+    document.getElementById('workDayTags').addEventListener('click', (e) => {
+      const tagBtn = e.target.closest('.modal-tag');
+      if (tagBtn && !e.target.closest('.modal-tag-add')) {
+        tagBtn.classList.toggle('selected');
+      }
+
+      if (e.target.closest('#addWorkDayTagBtn') || e.target.id === 'addWorkDayTagBtn') {
+        const newTag = prompt('Enter new tag name:');
+        if (newTag && newTag.trim()) {
+          const trimmed = newTag.trim();
+          if (!availableTags.includes(trimmed)) {
+            availableTags.push(trimmed);
+            saveData();
+          }
+          // Add to current selection
+          const container = document.getElementById('workDayTags');
+          const addBtn = container.querySelector('.modal-tag-add');
+          const newTagBtn = document.createElement('button');
+          newTagBtn.className = 'modal-tag selected';
+          newTagBtn.dataset.tag = trimmed;
+          newTagBtn.textContent = trimmed;
+          container.insertBefore(newTagBtn, addBtn);
+        }
+      }
+    });
+
+    document.getElementById('prevWeekBtn').addEventListener('click', () => {
+      if (currentWeekIndex > 0) { currentWeekIndex--; renderTracker(); }
+    });
+
+    document.getElementById('nextWeekBtn').addEventListener('click', () => {
+      if (currentWeekIndex < weeklyData.length - 1) { currentWeekIndex++; renderTracker(); }
+    });
+
+    document.getElementById('weekPills').addEventListener('click', (e) => {
+      if (e.target.classList.contains('week-pill')) {
+        currentWeekIndex = parseInt(e.target.dataset.week);
+        renderTracker();
+      }
+    });
+
+    document.getElementById('weekTableBody').addEventListener('click', (e) => {
+      const row = e.target.closest('tr');
+      if (row && row.dataset.week !== undefined) {
+        currentWeekIndex = parseInt(row.dataset.week);
+        renderTracker();
+      }
+    });
+
+    document.getElementById('dailyInputs').addEventListener('click', (e) => {
+      const btn = e.target.closest('.day-value-btn');
+      if (btn) {
+        editingDayIndex = parseInt(btn.dataset.day);
+        const currentWeek = weeklyData[currentWeekIndex];
+        document.getElementById('editModalTitle').textContent = `Edit ${dayNames[editingDayIndex]}`;
+        document.getElementById('editInput').value = currentWeek.days[editingDayIndex];
+        document.getElementById('editModal').classList.add('active');
+        document.getElementById('editInput').focus();
+        document.getElementById('editInput').select();
+      }
+    });
+
+    document.getElementById('tagsContainer').addEventListener('click', (e) => {
+      const removeBtn = e.target.closest('[data-remove]');
+      if (removeBtn) {
+        e.stopPropagation();
+        const tagToRemove = removeBtn.dataset.remove;
+        availableTags = availableTags.filter(t => t !== tagToRemove);
+        weeklyData.forEach(w => {
+          if (w.tags) w.tags = w.tags.filter(t => t !== tagToRemove);
+        });
+        saveData();
+        renderTags();
+        return;
+      }
+
+      const tagBtn = e.target.closest('.tag');
+      if (tagBtn) {
+        const tag = tagBtn.dataset.tag;
+        const currentWeek = weeklyData[currentWeekIndex];
+        if (!currentWeek.tags) currentWeek.tags = [];
+
+        if (currentWeek.tags.includes(tag)) {
+          currentWeek.tags = currentWeek.tags.filter(t => t !== tag);
+        } else {
+          currentWeek.tags.push(tag);
+        }
+        saveData();
+        renderTags();
+        return;
+      }
+
+      if (e.target.id === 'addTagBtn' || e.target.closest('#addTagBtn')) {
+        document.getElementById('newTagInput').value = '';
+        document.getElementById('addTagModal').classList.add('active');
+        document.getElementById('newTagInput').focus();
+      }
+    });
+
+    document.getElementById('cancelEditBtn').addEventListener('click', () => {
+      document.getElementById('editModal').classList.remove('active');
+      editingDayIndex = null;
+    });
+
+    document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
+
+    document.getElementById('editInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveEdit();
+      if (e.key === 'Escape') {
+        document.getElementById('editModal').classList.remove('active');
+        editingDayIndex = null;
+      }
+    });
+
+    document.getElementById('editModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('editModal')) {
+        document.getElementById('editModal').classList.remove('active');
+        editingDayIndex = null;
+      }
+    });
+
+    function saveEdit() {
+      const value = parseFloat(document.getElementById('editInput').value) || 0;
+      const clamped = Math.max(0, Math.min(24, value));
+      const week = weeklyData[currentWeekIndex];
+
+      week.days[editingDayIndex] = clamped;
+      week.total = week.days.reduce((a, b) => a + b, 0);
+
+      // Sync with dayData if exists
+      if (week.dayData && week.dayData[editingDayIndex]) {
+        week.dayData[editingDayIndex].hours = clamped;
+      }
+
+      saveData();
+      document.getElementById('editModal').classList.remove('active');
+      editingDayIndex = null;
+      renderTracker();
+    }
+
+    document.getElementById('cancelTagBtn').addEventListener('click', () => {
+      document.getElementById('addTagModal').classList.remove('active');
+    });
+
+    document.getElementById('saveTagBtn').addEventListener('click', saveNewTag);
+
+    document.getElementById('newTagInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveNewTag();
+      if (e.key === 'Escape') document.getElementById('addTagModal').classList.remove('active');
+    });
+
+    document.getElementById('addTagModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('addTagModal')) {
+        document.getElementById('addTagModal').classList.remove('active');
+      }
+    });
+
+    function saveNewTag() {
+      const newTag = document.getElementById('newTagInput').value.trim();
+      if (newTag && !availableTags.includes(newTag)) {
+        availableTags.push(newTag);
+        weeklyData[currentWeekIndex].tags = weeklyData[currentWeekIndex].tags || [];
+        weeklyData[currentWeekIndex].tags.push(newTag);
+        saveData();
+      }
+      document.getElementById('addTagModal').classList.remove('active');
+      renderTags();
+    }
+
+    document.getElementById('addWeekBtn').addEventListener('click', () => {
+      // Calculate the monday date for the new week
+      const lastWeek = weeklyData[weeklyData.length - 1];
+      let newMondayDate = '';
+      if (lastWeek && lastWeek.mondayDate) {
+        const lastMonday = new Date(lastWeek.mondayDate);
+        const nextMonday = new Date(lastMonday);
+        nextMonday.setDate(nextMonday.getDate() + 7);
+        newMondayDate = nextMonday.toISOString().split('T')[0];
+      }
+
+      const newWeek = {
+        week: weeklyData.length + 1,
+        mondayDate: newMondayDate,
+        days: [0, 0, 0, 0, 0, 0, 0],
+        total: 0,
+        tags: ['Nika'],
+        dayData: dayNames.map(() => ({ hours: 0, tags: [], notes: '' }))
+      };
+      weeklyData.push(newWeek);
+      currentWeekIndex = weeklyData.length - 1;
+      saveData();
+      renderTracker();
+
+      // Also update dashboard if visible
+      if (document.getElementById('dashboard').classList.contains('active')) {
+        renderWeekBreakdown();
+        renderComparisonChart();
+      }
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      let csv = 'Week,Monday Date,Tags,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday,Total\n';
+      weeklyData.forEach(w => {
+        const tags = (w.tags || []).join(';');
+        const mondayDate = w.mondayDate || '';
+        csv += `${w.week},${mondayDate},"${tags}",${w.days.join(',')},${w.total}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `df-work-tracker-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('importBtn').addEventListener('click', () => {
+      document.getElementById('fileInput').click();
+    });
+
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const text = event.target.result;
+          const lines = text.split('\n').filter(l => l.trim());
+          const newData = [];
+          const newTags = new Set(availableTags);
+
+          lines.slice(1).forEach((line, i) => {
+            // Try new format: Week,Monday Date,Tags,Mon,Tue,Wed,Thu,Fri,Sat,Sun,Total
+            const newMatch = line.match(/^(\d+),([^,]*),("?)([^"]*)\3,(.+)$/);
+            if (newMatch) {
+              const weekNum = parseInt(newMatch[1]);
+              let mondayDate = newMatch[2].trim();
+              // Convert DD/MM/YYYY to YYYY-MM-DD
+              if (mondayDate.includes('/')) {
+                const parts = mondayDate.split('/');
+                if (parts.length === 3) {
+                  mondayDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                }
+              }
+              const tags = newMatch[4].split(';').filter(t => t.trim());
+              const rest = newMatch[5].split(',').map(p => parseFloat(p.trim()) || 0);
+
+              tags.forEach(t => newTags.add(t));
+
+              const days = rest.slice(0, 7);
+              newData.push({
+                week: weekNum,
+                mondayDate: mondayDate,
+                tags: tags,
+                days: days,
+                total: rest[7] || days.reduce((a, b) => a + b, 0),
+                dayData: days.map(h => ({ hours: h, tags: [], notes: '' }))
+              });
+            } else {
+              // Try old format
+              const oldMatch = line.match(/^(\d+),"([^"]*)",(.+)$/);
+              if (oldMatch) {
+                const weekNum = parseInt(oldMatch[1]);
+                const tags = oldMatch[2].split(';').filter(t => t.trim());
+                const rest = oldMatch[3].split(',').map(p => parseFloat(p.trim()) || 0);
+
+                tags.forEach(t => newTags.add(t));
+
+                newData.push({
+                  week: weekNum,
+                  tags: tags,
+                  days: rest.slice(0, 7),
+                  total: rest[7] || rest.slice(0, 7).reduce((a, b) => a + b, 0)
+                });
+              } else {
+                const parts = line.split(',').map(p => p.trim());
+                if (parts.length >= 9) {
+                  newData.push({
+                    week: i + 1,
+                    tags: ['Nika'],
+                    days: parts.slice(1, 8).map(p => parseFloat(p) || 0),
+                    total: parseFloat(parts[8]) || 0
+                  });
+                }
+              }
+            }
+          });
+
+          if (newData.length > 0) {
+            weeklyData = newData;
+            availableTags = [...newTags];
+            currentWeekIndex = weeklyData.length - 1;
+            saveData();
+            renderTracker();
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Failed to parse CSV file');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    window.addEventListener('resize', () => {
+      if (document.getElementById('dashboard').classList.contains('active')) {
+        renderWeekRankList();
+      }
+    });
+
+    loadData();
+    renderDashboardStats();
+    renderCharts();
+  </script>
+</body>
+</html>
